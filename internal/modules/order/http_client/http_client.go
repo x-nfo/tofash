@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"order-service/config"
 	"time"
+	"tofash/internal/modules/order/config"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"

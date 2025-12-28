@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"math"
-	"order-service/internal/core/domain/entity"
-	"order-service/internal/core/domain/model"
 	"time"
+	"tofash/internal/modules/order/internal/core/domain/entity"
+	"tofash/internal/modules/order/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

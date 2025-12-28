@@ -3,9 +3,9 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"order-service/config"
-	"order-service/internal/core/domain/entity"
-	"order-service/utils"
+	"tofash/internal/modules/order/config"
+	"tofash/internal/modules/order/internal/core/domain/entity"
+	"tofash/internal/modules/order/utils"
 
 	"github.com/labstack/gommon/log"
 	"github.com/streadway/amqp"

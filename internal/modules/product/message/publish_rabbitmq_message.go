@@ -3,8 +3,8 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"product-service/config"
-	"product-service/internal/core/domain/entity"
+	"tofash/internal/modules/product/config"
+	"tofash/internal/modules/product/internal/core/domain/entity"
 
 	"github.com/labstack/gommon/log"
 	"github.com/streadway/amqp"

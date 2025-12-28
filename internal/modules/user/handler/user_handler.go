@@ -1,4 +1,4 @@
-package handler
+﻿package handler
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"user-service/config"
-	"user-service/internal/adapter"
-	"user-service/internal/adapter/handler/request"
-	"user-service/internal/adapter/handler/response"
-	"user-service/internal/core/domain/entity"
-	"user-service/internal/core/service"
-	"user-service/utils/conv"
+	adapter "tofash/internal/modules/user"
+	"tofash/internal/modules/user/config"
+	"tofash/internal/modules/user/handler/request"
+	"tofash/internal/modules/user/handler/response"
+	"tofash/internal/modules/user/internal/core/domain/entity"
+	"tofash/internal/modules/user/internal/core/service"
+	"tofash/internal/modules/user/utils/conv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"product-service/internal/core/domain/entity"
-	"product-service/internal/core/domain/model"
+	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"
 

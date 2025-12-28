@@ -2,8 +2,8 @@ package message
 
 import (
 	"encoding/json"
-	"user-service/config"
-	"user-service/utils"
+	"tofash/internal/modules/user/config"
+	"tofash/internal/modules/user/utils"
 
 	"github.com/labstack/gommon/log"
 	"github.com/streadway/amqp"

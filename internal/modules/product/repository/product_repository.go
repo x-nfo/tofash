@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"product-service/internal/core/domain/entity"
-	"product-service/internal/core/domain/model"
 	"strconv"
 	"strings"
+	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/internal/core/domain/model"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/labstack/gommon/log"

@@ -6,11 +6,12 @@ import (
 	"io"
 	"net/http"
 	"time"
-	"user-service/config"
-	"user-service/internal/adapter"
-	"user-service/internal/adapter/handler/response"
-	"user-service/internal/adapter/storage"
-	"user-service/internal/core/service"
+	adapter "tofash/internal/modules/user"
+	"tofash/internal/modules/user/config"
+	"tofash/internal/modules/user/handler/response"
+
+	"tofash/internal/modules/user/internal/core/service"
+	"tofash/internal/modules/user/storage"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"

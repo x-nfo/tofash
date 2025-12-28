@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"order-service/internal/core/domain/entity"
 	"strings"
+	"tofash/internal/modules/order/internal/core/domain/entity"
 
 	"github.com/elastic/go-elasticsearch/v7"
 )

@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"product-service/config"
-	"product-service/internal/core/domain/entity"
+	"tofash/internal/modules/product/config"
+	"tofash/internal/modules/product/internal/core/domain/entity"
 
 	"github.com/labstack/gommon/log"
 )
