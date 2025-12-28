@@ -6,37 +6,6 @@ import type { User, ApiResponse } from "../types/api";
 
 let error = "";
 let success = "";
-
-if (Astro.request.method === "POST") {
-    try {
-        const data = await Astro.request.formData();
-        const email = data.get("email") as string;
-        const password = data.get("password") as string;
-
-        if (!email || !password) {
-            throw new Error("Email and password are required");
-        }
-
-        // Call Backend API
-        const response = await api<User>("/login", {
-            method: "POST",
-            body: { email, password },
-            auth: false, // Login doesn't require token
-        });
-
-        if (response.status && response.data) {
-            // Success
-            // Note: In a real app we might set a cookie here for SSR persistence
-            // For now we will rely on client-side store sync in the script below
-            success = "Login successful! Redirecting...";
-        } else {
-            error = response.message || "Invalid credentials";
-        }
-    } catch (e: any) {
-        console.error("Login Error:", e);
-        error = e.message || "An error occurred during login";
-    }
-}
 ---
 
 <BaseLayout title="Sign In">
@@ -191,6 +160,10 @@ if (Astro.request.method === "POST") {
                 if (response.status && response.data) {
                     // Update global store
                     setUser(response.data);
+
+                    // Set Cookies
+                    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Strict`;
+                    document.cookie = `user_role=${response.data.role_name}; path=/; max-age=86400; SameSite=Strict`;
 
                     // Redirect
                     window.location.href = "/";
