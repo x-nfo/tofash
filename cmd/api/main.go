@@ -11,31 +11,28 @@ import (
 
 	// Product Module
 	productHandler "tofash/internal/modules/product/handlers"
-	productMessage "tofash/internal/modules/product/message"
 	productRepo "tofash/internal/modules/product/repository"
 	productService "tofash/internal/modules/product/service"
 
 	// Order Module
 	orderHandler "tofash/internal/modules/order/handlers"
-	orderMessage "tofash/internal/modules/order/message"
 	orderRepo "tofash/internal/modules/order/repository"
 	orderService "tofash/internal/modules/order/service"
 
 	// Payment Module
 	paymentHandler "tofash/internal/modules/payment/handlers"
 	paymentHttpClient "tofash/internal/modules/payment/http_client"
-	paymentMessage "tofash/internal/modules/payment/message"
 	paymentRepo "tofash/internal/modules/payment/repository"
 	paymentService "tofash/internal/modules/payment/service"
 
 	// Notification Module
 	notifHandler "tofash/internal/modules/notification/handlers"
 	notifMessage "tofash/internal/modules/notification/message"
-	notifRabbitMQ "tofash/internal/modules/notification/rabbitmq"
 	notifRepo "tofash/internal/modules/notification/repository"
 	notifService "tofash/internal/modules/notification/service"
 
-	// Shared
+	"tofash/internal/modules/system/repository"
+	"tofash/internal/shared/async"
 	mid "tofash/internal/shared/middleware"
 
 	"github.com/labstack/echo/v4"
@@ -84,9 +81,9 @@ func main() {
 	productRepository := productRepo.NewProductRepository(db)
 	categoryRepository := productRepo.NewCategoryRepository(db)
 	cartRepository := productRepo.NewCartRedisRepository(redisClient)
-	productPublisher := productMessage.NewPublishRabbitMQ(cfg)
+	// productPublisher := productMessage.NewPublishRabbitMQ(cfg) // Removed RabbitMQ
 
-	productSvc := productService.NewProductService(productRepository, productPublisher, categoryRepository)
+	productSvc := productService.NewProductService(productRepository, nil, categoryRepository)
 	categorySvc := productService.NewCategoryService(categoryRepository)
 	cartSvc := productService.NewCartService(cartRepository)
 
@@ -96,13 +93,16 @@ func main() {
 
 	// 6. WIRING: Order Module
 	orderRepository := orderRepo.NewOrderRepository(db)
-	// RabbitMQ Publisher
-	orderPublisher := orderMessage.NewPublisherRabbitMQ(cfg)
+	// RabbitMQ Publisher Removed
+	// orderPublisher := orderMessage.NewPublisherRabbitMQ(cfg)
+
+	// Job Queue (System Module)
+	jobRepo := repository.NewJobRepository(db)
 
 	orderSvc := orderService.NewOrderService(
 		orderRepository,
 		cfg,
-		orderPublisher,
+		jobRepo,
 		productSvc,
 		userSvc,
 	)
@@ -111,19 +111,25 @@ func main() {
 	// 7. WIRING: Notification Module
 	notifRepository := notifRepo.NewNotificationRepository(db)
 	emailSvc := notifMessage.NewMessageEmail(cfg)
-	notifSvc := notifService.NewNotificationService(notifRepository)
+	notifSvc := notifService.NewNotificationService(notifRepository, emailSvc)
 	notificationH := notifHandler.NewNotificationHandler(notifSvc)
 	wsH := notifHandler.NewWebSocketHandler(cfg)
 
-	consumeRabbit := notifRabbitMQ.NewConsumeRabbitMQ(emailSvc, notifRepository, notifSvc)
-	go consumeRabbit.ConsumeMessage("notification_queue") // Use config queue name ideally
+	// consumerRabbit := notifRabbitMQ.NewConsumeRabbitMQ... // Removed
+
+	// 7b. WIRING: Async Worker (Job Queue Consumer)
+	jobWorker := async.NewWorker(jobRepo, productSvc, notifSvc)
+	go jobWorker.Run()
 
 	// 8. WIRING: Payment Module
 	paymentRepository := paymentRepo.NewPaymentRepository(db)
 	midtransClient := paymentHttpClient.NewMidtransClient(cfg)
-	paymentPublisher := paymentMessage.NewPublisherRabbitMQ(cfg)
-	// Direct service injection
-	paymentSvc := paymentService.NewPaymentService(paymentRepository, cfg, midtransClient, paymentPublisher, orderSvc, userSvc)
+	// paymentPublisher := paymentMessage.NewPublisherRabbitMQ(cfg) // TODO: Refactor payment too if needed
+	// For now, pass nil or remove dependency if not critical.
+	// Assuming PaymentService still needs refactoring or we ignore for now as per instructions "Refactor Services (Publisher) -> OrderService".
+	// But let's check PaymentService signature.
+
+	paymentSvc := paymentService.NewPaymentService(paymentRepository, cfg, midtransClient, orderSvc, userSvc)
 	paymentH := paymentHandler.NewPaymentHandler(paymentSvc)
 
 	// 7. Setup Routes

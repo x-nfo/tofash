@@ -17,6 +17,7 @@ type ProductServiceInterface interface {
 	Update(ctx context.Context, req entity.ProductEntity) error
 	Delete(ctx context.Context, productID int64) error
 	SearchProducts(ctx context.Context, query entity.QueryStringProduct) ([]entity.ProductEntity, int64, int64, error)
+	UpdateStock(ctx context.Context, productID int64, quantity int) error
 }
 
 type productService struct {
@@ -32,20 +33,27 @@ func (p *productService) SearchProducts(ctx context.Context, query entity.QueryS
 
 // Create implements ProductServiceInterface.
 func (p *productService) Create(ctx context.Context, req entity.ProductEntity) error {
-	productID, err := p.repo.Create(ctx, req)
+	// productID, err := p.repo.Create(ctx, req)
+	_, err := p.repo.Create(ctx, req)
 	if err != nil {
 		log.Errorf("[ProductService-1] Create: %v", err)
 		return err
 	}
 
-	getProductByID, err := p.GetByID(ctx, productID)
-	if err != nil {
-		log.Errorf("[ProductService-2] Create: %v", err)
-	}
+	// getProductByID, err := p.GetByID(ctx, productID)
+	// if err != nil {
+	// 	log.Errorf("[ProductService-2] Create: %v", err)
+	// }
 
-	if err := p.publisherRabbitMQ.PublishProductToQueue(*getProductByID); err != nil {
-		log.Errorf("[ProductService-3] Create: %v", err)
-	}
+	// RabbitMQ usage to NOT be removed here?
+	// The user requested to remove RabbitMQ from Order Service and to create a Worker.
+	// But did they ask to remove RabbitMQ from Product Service for syncing?
+	// Step 5 says: Remove all RabbitMQ-related code.
+	// So I should remove RabbitMQ calls here too.
+
+	// if err := p.publisherRabbitMQ.PublishProductToQueue(*getProductByID); err != nil {
+	// 	log.Errorf("[ProductService-3] Create: %v", err)
+	// }
 
 	return nil
 }
@@ -58,9 +66,8 @@ func (p *productService) Delete(ctx context.Context, productID int64) error {
 		return err
 	}
 
-	if err := p.publisherRabbitMQ.DeleteProductFromQueue(productID); err != nil {
-		log.Errorf("[ProductService-2] Delete: %v", err)
-	}
+	// RabbitMQ removal
+	// if err := p.publisherRabbitMQ.DeleteProductFromQueue(productID); err != nil { ... }
 
 	return nil
 }
@@ -98,16 +105,37 @@ func (p *productService) Update(ctx context.Context, req entity.ProductEntity) e
 		return err
 	}
 
-	getProductByID, err := p.GetByID(ctx, req.ID)
-	if err != nil {
-		log.Errorf("[ProductService-2] Update: %v", err)
-	}
-
-	if err := p.publisherRabbitMQ.PublishProductToQueue(*getProductByID); err != nil {
-		log.Errorf("[ProductService-3] Update: %v", err)
-	}
+	// RabbitMQ removal
+	// if err := p.publisherRabbitMQ.PublishProductToQueue(*getProductByID); err != nil { ... }
 
 	return nil
+}
+
+// UpdateStock implements ProductServiceInterface.
+func (p *productService) UpdateStock(ctx context.Context, productID int64, quantity int) error {
+	product, err := p.repo.GetByID(ctx, productID)
+	if err != nil {
+		log.Errorf("[ProductService] UpdateStock GetByID: %v", err)
+		return err
+	}
+
+	if product == nil {
+		return errors.New("product not found")
+	}
+
+	// Assuming Product.Stock is int or int64?
+	// Error was: mismatched types int and int64
+	// If product.Stock is int, then cast quantity to int.
+	// Let's check entity.
+
+	// Assuming ProductEntity struct has Stock as int based on error.
+	if product.Stock < int(quantity) {
+		return errors.New("insufficient stock")
+	}
+
+	product.Stock -= int(quantity)
+
+	return p.repo.Update(ctx, *product)
 }
 
 func NewProductService(repo repository.ProductRepositoryInterface, publisherRabbitMQ message.PublishRabbitMQInterface, repoCat repository.CategoryRepositoryInterface) ProductServiceInterface {

@@ -9,7 +9,6 @@ import (
 	orderService "tofash/internal/modules/order/service"
 	"tofash/internal/modules/payment/entity"
 	httpclient "tofash/internal/modules/payment/http_client"
-	"tofash/internal/modules/payment/message"
 	"tofash/internal/modules/payment/repository"
 	userService "tofash/internal/modules/user/service"
 
@@ -24,12 +23,11 @@ type PaymentServiceInterface interface {
 }
 
 type paymentService struct {
-	repo              repository.PaymentRepositoryInterface
-	midtrans          httpclient.MidtransClientInterface
-	cfg               *config.Config
-	publisherRabbitMQ message.PublishRabbitMQInterface
-	orderService      orderService.OrderServiceInterface
-	userService       userService.UserServiceInterface
+	repo         repository.PaymentRepositoryInterface
+	midtrans     httpclient.MidtransClientInterface
+	cfg          *config.Config
+	orderService orderService.OrderServiceInterface
+	userService  userService.UserServiceInterface
 }
 
 // GetDetail implements PaymentServiceInterface.
@@ -135,9 +133,8 @@ func (p *paymentService) ProcessPayment(ctx context.Context, payment entity.Paym
 			return nil, err
 		}
 
-		if err := p.publisherRabbitMQ.PublishPaymentSuccess(payment); err != nil {
-			log.Errorf("[PaymentService] ProcessPayment-3: %v", err)
-		}
+		// REMOVED: RabbitMQ Publish PaymentSuccess
+		// if err := p.publisherRabbitMQ.PublishPaymentSuccess(payment); err != nil { ... }
 
 		return &payment, nil
 	}
@@ -175,9 +172,8 @@ func (p *paymentService) ProcessPayment(ctx context.Context, payment entity.Paym
 			return nil, err
 		}
 
-		if err := p.publisherRabbitMQ.PublishPaymentSuccess(payment); err != nil {
-			log.Errorf("[PaymentService] ProcessPayment-9: %v", err)
-		}
+		// REMOVED: RabbitMQ Publish PaymentSuccess
+		// if err := p.publisherRabbitMQ.PublishPaymentSuccess(payment); err != nil { ... }
 
 		return &payment, nil
 	}
@@ -214,13 +210,12 @@ func (p *paymentService) httpClientPublicOrderIDByCodeService(orderCode string) 
 	return p.orderService.GetPublicOrderIDByOrderCode(context.Background(), orderCode)
 }
 
-func NewPaymentService(repo repository.PaymentRepositoryInterface, cfg *config.Config, midtrans httpclient.MidtransClientInterface, publisherRabbitMQ message.PublishRabbitMQInterface, orderService orderService.OrderServiceInterface, userService userService.UserServiceInterface) PaymentServiceInterface {
+func NewPaymentService(repo repository.PaymentRepositoryInterface, cfg *config.Config, midtrans httpclient.MidtransClientInterface, orderService orderService.OrderServiceInterface, userService userService.UserServiceInterface) PaymentServiceInterface {
 	return &paymentService{
-		repo:              repo,
-		midtrans:          midtrans,
-		cfg:               cfg,
-		publisherRabbitMQ: publisherRabbitMQ,
-		orderService:      orderService,
-		userService:       userService,
+		repo:         repo,
+		midtrans:     midtrans,
+		cfg:          cfg,
+		orderService: orderService,
+		userService:  userService,
 	}
 }

@@ -147,6 +147,10 @@ func (m *mockProductService) SearchProducts(ctx context.Context, query productEn
 	return nil, 0, 0, nil
 }
 
+func (m *mockProductService) UpdateStock(ctx context.Context, productID int64, quantity int) error {
+	return nil
+}
+
 type mockUserService struct {
 	getByIDFn func(ctx context.Context, userID int64) (*userEntity.UserEntity, error)
 }

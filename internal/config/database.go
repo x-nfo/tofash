@@ -6,6 +6,7 @@ import (
 	orderModel "tofash/internal/modules/order/model"
 	productSeeds "tofash/internal/modules/product/database/seeds"
 	productModel "tofash/internal/modules/product/model"
+	systemModel "tofash/internal/modules/system/model"
 	"tofash/internal/modules/user/database/seeds"
 	userModel "tofash/internal/modules/user/model"
 
@@ -78,6 +79,9 @@ func InitDatabase(cfg *Config) *gorm.DB {
 		// Order Module
 		&orderModel.Order{},
 		&orderModel.OrderItem{},
+
+		// System (Job Queue)
+		&systemModel.Job{},
 	)
 
 	if err != nil {
