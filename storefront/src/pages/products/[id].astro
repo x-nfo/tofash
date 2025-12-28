@@ -1,0 +1,162 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { api } from "../../lib/api";
+import type { Product } from "../../types/api";
+
+const { id } = Astro.params;
+
+let product: Product | null = null;
+let error = "";
+
+if (!id) {
+    return Astro.redirect("/products");
+}
+
+try {
+    const response = await api<Product>(`/products/${id}`);
+    product = response.data;
+} catch (e) {
+    console.error(`Failed to fetch product ${id}:`, e);
+    error = "Product not found or unable to load.";
+}
+
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+    }).format(amount);
+};
+
+// Image logic
+import { getPlaceholderImage } from "../../lib/utils";
+
+// Image logic
+const imagePath = product?.product_image || product?.image;
+const imageUrl = imagePath
+    ? `http://localhost:8080/public/${imagePath}`
+    : getPlaceholderImage(product?.product_name || "No Image");
+
+console.log("Rendering Product Detail:", id, product ? "Found" : "Not Found");
+---
+
+<BaseLayout title={product ? product.product_name : "Product Not Found"}>
+    <div class="bg-white">
+        <div
+            class="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8"
+        >
+            {
+                error || !product ? (
+                    <div class="text-center py-20">
+                        <p class="text-xl text-red-600">
+                            {error || "Product not found"}
+                        </p>
+                        <a
+                            href="/products"
+                            class="mt-4 inline-block text-indigo-600 hover:text-indigo-500"
+                        >
+                            Back to products
+                        </a>
+                    </div>
+                ) : (
+                    <div class="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
+                        {/* Image gallery */}
+                        <div class="flex flex-col-reverse">
+                            <div class="w-full aspect-w-1 aspect-h-1">
+                                <img
+                                    src={imageUrl}
+                                    alt={product.product_name}
+                                    class="w-full h-full object-center object-cover sm:rounded-lg"
+                                    onerror={`this.src='${getPlaceholderImage("No Image")}'`}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Product info */}
+                        <div class="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
+                            <h1 class="text-3xl font-extrabold tracking-tight text-gray-900">
+                                {product.product_name}
+                            </h1>
+
+                            <div class="mt-3">
+                                <h2 class="sr-only">Product information</h2>
+                                <p class="text-3xl text-gray-900">
+                                    {formatCurrency(
+                                        product.sale_price ||
+                                            product.reguler_price,
+                                    )}
+                                </p>
+                            </div>
+
+                            <div class="mt-6">
+                                <h3 class="sr-only">Description</h3>
+                                <div
+                                    class="text-base text-gray-700 space-y-6"
+                                    set:html={
+                                        product.description ||
+                                        "No description available."
+                                    }
+                                />
+                            </div>
+
+                            <div class="mt-10 flex sm:flex-col1">
+                                <button
+                                    id="add-to-cart-detail"
+                                    class="max-w-xs flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 sm:w-full"
+                                    data-id={product.id}
+                                    data-name={product.product_name}
+                                    data-price={
+                                        product.sale_price ||
+                                        product.reguler_price
+                                    }
+                                    data-image={
+                                        product.product_image ||
+                                        product.image ||
+                                        ""
+                                    }
+                                >
+                                    Add to bag
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div>
+    </div>
+</BaseLayout>
+
+<script>
+    import { addToCart } from "../../lib/store";
+
+    const button = document.getElementById("add-to-cart-detail");
+
+    if (button) {
+        button.addEventListener("click", () => {
+            const id = button.getAttribute("data-id");
+            const name = button.getAttribute("data-name");
+            const price = button.getAttribute("data-price");
+            const image = button.getAttribute("data-image");
+
+            if (id && name && price) {
+                addToCart({
+                    product_id: parseInt(id),
+                    quantity: 1,
+                    size: "Standard",
+                    color: "Standard",
+                    product: {
+                        id: parseInt(id),
+                        product_name: name,
+                        sale_price: parseInt(price),
+                        reguler_price: parseInt(price),
+                        category_name: "Fashion",
+                        product_image: image || undefined,
+                    },
+                });
+
+                const originalText = button.innerText;
+                button.innerText = "Added to Bag!";
+                setTimeout(() => (button.innerText = originalText), 1000);
+            }
+        });
+    }
+</script>

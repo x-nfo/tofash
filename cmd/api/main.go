@@ -50,6 +50,7 @@ func main() {
 	// 2. Setup Echo
 	e := echo.New()
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS()) // Enable CORS for frontend communication
 
 	// 3. Setup Dependencies
 

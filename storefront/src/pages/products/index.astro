@@ -1,0 +1,51 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProductCard from "../../components/fashion/ProductCard.astro";
+import { api } from "../../lib/api";
+import type { Product } from "../../types/api";
+
+let products: Product[] = [];
+let error = "";
+
+try {
+    const response = await api<Product[]>("/products");
+    products = response.data;
+} catch (e) {
+    console.error("Failed to fetch products:", e);
+    error = "Unable to load products at this time.";
+}
+---
+
+<BaseLayout title="Shop">
+    <div class="bg-white">
+        <div
+            class="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8"
+        >
+            <h2 class="text-2xl font-extrabold tracking-tight text-gray-900">
+                Latest Arrivals
+            </h2>
+
+            {
+                error && (
+                    <div class="mt-4 p-4 bg-red-50 text-red-700 rounded-md">
+                        {error}
+                    </div>
+                )
+            }
+
+            {
+                !error && products.length === 0 && (
+                    <div class="mt-10 text-center text-gray-500">
+                        No products found.
+                    </div>
+                )
+            }
+
+            <div
+                class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8"
+            >
+                {products.map((product) => <ProductCard product={product} />)}
+            </div>
+        </div>
+    </div>
+</BaseLayout>

@@ -1,0 +1,33 @@
+---
+import Navbar from "../components/shared/Navbar.astro";
+import Navbar from "../components/shared/Navbar.astro";
+import Footer from "../components/shared/Footer.astro";
+import "../styles/global.css";
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Tofash - Premium Fashion Store" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | Tofash</title>
+	</head>
+	<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+		<Navbar />
+		<main
+			class="min-h-screen pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+		>
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>
