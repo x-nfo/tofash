@@ -7,13 +7,51 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=postgres_main
-      - DB_USER=postgres
-      - DB_PASSWORD=lokal
-      - DB_NAME=gosayu_db
-      - DB_PORT=5432
+      # App
+      - APP_PORT=8080
+      - APP_ENV=local
+      - JWT_SECRET_KEY=secret123
+      - JWT_ISSUER=tofash
+
+      # Database
+      - DATABASE_HOST=postgres_main
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=lokal
+      - DATABASE_NAME=gosayu_db
+      - DATABASE_PORT=5432
+      - DATABASE_MAX_OPEN_CONNECTION=10
+      - DATABASE_MAX_IDLE_CONNECTION=5
+
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # RabbitMQ
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+
+      # Elasticsearch
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+
+      # Email (Mock or Real)
+      - EMAIL_USERNAME=mock
+      - EMAIL_PASSWORD=mock
+      - EMAIL_HOST=smtp.mailtrap.io
+      - EMAIL_PORT=2525
+      - EMAIL_SENDING=no-reply@tofash.com
+      - EMAIL_IS_TLS=false
+
+      # Midtrans (Sandbox)
+      - MIDTRANS_SERVER_KEY=SB-Mid-server-XXXX
+      - MIDTRANS_ENVIRONMENT=1
+
     depends_on:
       - postgres_main
+      - redis
+      - rabbitmq
+      - elasticsearch
 
   postgres_main:
     image: postgres:15-alpine
@@ -27,11 +65,33 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Redis tetap diperlukan untuk Caching & Rate Limiter
   redis:
     image: redis:alpine
+    container_name: gosayu_redis
     ports:
       - "6379:6379"
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: gosayu_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: gosayu_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
 volumes:
   postgres_data:
+  elasticsearch_data:

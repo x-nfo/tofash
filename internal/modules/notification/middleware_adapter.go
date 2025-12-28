@@ -3,9 +3,9 @@ package adapter
 import (
 	"encoding/json"
 	"net/http"
-	"notification-service/config"
-	"notification-service/internal/adapter/handlers/response"
-	"notification-service/internal/core/domain/entity"
+	"tofash/internal/config"
+	"tofash/internal/modules/notification/entity"
+	"tofash/internal/modules/notification/handlers/response"
 
 	"strings"
 

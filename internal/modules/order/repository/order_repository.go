@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 	"tofash/internal/modules/order/entity"
-	"tofash/internal/modules/order/internal/core/domain/model"
+	"tofash/internal/modules/order/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"tofash/internal/modules/user/database/seeds"
-	"tofash/internal/modules/user/internal/core/domain/model"
+	"tofash/internal/modules/user/model"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"

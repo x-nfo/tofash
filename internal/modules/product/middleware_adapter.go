@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"tofash/internal/modules/product/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/handlers/response"
 

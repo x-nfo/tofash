@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"tofash/internal/modules/order/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/message"
 	"tofash/internal/modules/order/repository"

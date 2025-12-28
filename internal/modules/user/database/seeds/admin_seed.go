@@ -2,7 +2,7 @@ package seeds
 
 import (
 	"log"
-	"tofash/internal/modules/user/internal/core/domain/model"
+	"tofash/internal/modules/user/model"
 	"tofash/internal/modules/user/utils/conv"
 
 	"gorm.io/gorm"

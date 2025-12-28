@@ -1,7 +1,7 @@
 package httpclient
 
 import (
-	"payment-service/config"
+	"tofash/internal/config"
 
 	"github.com/labstack/gommon/log"
 	"github.com/midtrans/midtrans-go"

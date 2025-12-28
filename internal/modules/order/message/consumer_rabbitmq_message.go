@@ -7,14 +7,16 @@ import (
 	"fmt"
 	"io"
 
-	"tofash/internal/modules/order/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/order/entity"
 
 	"github.com/labstack/gommon/log"
+	"github.com/streadway/amqp"
 )
 
 func ConsumeUpdateStatus() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	conn, err := config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[ConsumeUpdateStatus-1] Failed to connect to RabbitMQ: %v", err)
 	}
@@ -55,7 +57,7 @@ func ConsumeUpdateStatus() {
 
 	log.Info("RabbitMQ Consumer order started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[ConsumeUpdateStatus-5] Failed initialize Elasticsearch client: %v", err)
 	}
@@ -114,7 +116,10 @@ func ConsumeUpdateStatus() {
 }
 
 func ConsumePaymentSuccess() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	var conn *amqp.Connection
+	var err error
+	conn, err = config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[consumePaymentSuccess-1] Failed to connect to RabbitMQ: %v", err)
 	}
@@ -155,7 +160,7 @@ func ConsumePaymentSuccess() {
 
 	log.Info("RabbitMQ Consumer order started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[StartOrderConsumer-5] Failed initialize Elasticsearch client: %v", err)
 	}
@@ -214,7 +219,10 @@ func ConsumePaymentSuccess() {
 }
 
 func ConsumeDeleteOrder() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	var conn *amqp.Connection
+	var err error
+	conn, err = config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[ConsumeDeleteOrder-1] Failed to connect to RabbitMQ: %v", err)
 	}
@@ -255,7 +263,7 @@ func ConsumeDeleteOrder() {
 
 	log.Info("RabbitMQ Consumer order started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[ConsumeDeleteOrder-5] Failed initialize Elasticsearch client: %v", err)
 	}
@@ -286,7 +294,10 @@ func ConsumeDeleteOrder() {
 }
 
 func StartOrderConsumer() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	var conn *amqp.Connection
+	var err error
+	conn, err = config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[StartOrderConsumer-1] Failed to connect to RabbitMQ: %v", err)
 		return
@@ -331,7 +342,7 @@ func StartOrderConsumer() {
 
 	log.Info("RabbitMQ Consumer order started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[StartOrderConsumer-5] Failed initialize Elasticsearch client: %v", err)
 		return

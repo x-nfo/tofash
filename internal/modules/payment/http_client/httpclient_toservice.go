@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"payment-service/config"
 	"time"
+	"tofash/internal/config"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"

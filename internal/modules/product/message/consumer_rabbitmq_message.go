@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"tofash/internal/modules/product/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/product/entity"
 
 	"github.com/labstack/gommon/log"
 )
 
 func StartDeleteOrderConsumer() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	conn, err := config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[StartDeleteOrderConsumer-1] Failed to connect to RabbitMQ: %v", err)
 	}
@@ -28,7 +29,7 @@ func StartDeleteOrderConsumer() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		config.NewConfig().PublisherName.ProductDelete,
+		cfg.PublisherName.ProductDelete,
 		true,
 		false,
 		false,
@@ -54,7 +55,7 @@ func StartDeleteOrderConsumer() {
 
 	log.Info("RabbitMQ Consumer started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[StartDeleteOrderConsumer-5] Failed initialize Elasticsearch client: %v", err)
 	}
@@ -85,7 +86,8 @@ func StartDeleteOrderConsumer() {
 }
 
 func StartConsumer() {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	conn, err := config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[StartConsumer-1] Failed to connect to RabbitMQ: %v", err)
 	}
@@ -100,7 +102,7 @@ func StartConsumer() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		config.NewConfig().PublisherName.ProductPublish,
+		cfg.PublisherName.ProductPublish,
 		true,
 		false,
 		false,
@@ -126,7 +128,7 @@ func StartConsumer() {
 
 	log.Info("RabbitMQ Consumer started...")
 
-	esClient, err := config.NewConfig().InitElasticsearch()
+	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
 	if err != nil {
 		log.Errorf("[StartConsumer-5] Failed initialize Elasticsearch client: %v", err)
 	}

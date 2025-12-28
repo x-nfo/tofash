@@ -2,9 +2,9 @@ package message
 
 import (
 	"encoding/json"
-	"tofash/internal/modules/product/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/product/entity"
-	"tofash/internal/modules/product/internal/core/domain/model"
+	"tofash/internal/modules/product/model"
 
 	"github.com/labstack/gommon/log"
 )
@@ -17,7 +17,8 @@ func StartUpdateStockConsumer() {
 		return
 	}
 
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	conn, err := config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[StartUpdateStockConsumer-1] Failed to connect to RabbitMQ: %v", err)
 		return
@@ -86,6 +87,6 @@ func StartUpdateStockConsumer() {
 			log.Errorf("[StartUpdateStockConsumer-8] Failed to update stock: %v", err)
 			continue
 		}
-		log.Printf("Mengurangi stok produk %s sebanyak %d", orderItem.ProductID, orderItem.Quantity)
+		log.Printf("Stock Product ID %d berhasil diupdate", orderItem.ProductID)
 	}
 }

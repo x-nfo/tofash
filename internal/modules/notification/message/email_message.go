@@ -2,7 +2,7 @@ package message
 
 import (
 	"crypto/tls"
-	"notification-service/config"
+	"tofash/internal/config"
 
 	"github.com/go-mail/mail"
 	"github.com/labstack/gommon/log"

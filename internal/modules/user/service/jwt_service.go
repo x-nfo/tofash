@@ -2,7 +2,7 @@ package service
 
 import (
 	"time"
-	"tofash/internal/modules/user/config"
+	"tofash/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
 )

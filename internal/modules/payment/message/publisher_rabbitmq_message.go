@@ -3,8 +3,8 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"payment-service/config"
-	"payment-service/internal/core/domain/entity"
+	"tofash/internal/config"
+	"tofash/internal/modules/payment/entity"
 
 	"github.com/labstack/gommon/log"
 	"github.com/streadway/amqp"
@@ -20,7 +20,7 @@ type PublishRabbitMQ struct {
 
 // PublishPaymentSuccess implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishPaymentSuccess(payment entity.PaymentEntity) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishPaymentSuccess-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -37,7 +37,7 @@ func (p *PublishRabbitMQ) PublishPaymentSuccess(payment entity.PaymentEntity) er
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		p.cfg.PublisherName.PaymentSuccess,
+		p.cfg.PublisherName.PublisherPaymentSuccess,
 		true,
 		false,
 		false,

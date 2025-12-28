@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math"
 	"tofash/internal/modules/payment/entity"
-	"tofash/internal/modules/payment/internal/core/domain/model"
+	"tofash/internal/modules/payment/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

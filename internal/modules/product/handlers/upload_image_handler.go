@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+	"tofash/internal/config"
 	adapter "tofash/internal/modules/product"
-	"tofash/internal/modules/product/config"
 	"tofash/internal/modules/product/handlers/response"
 	"tofash/internal/modules/product/storage"
 

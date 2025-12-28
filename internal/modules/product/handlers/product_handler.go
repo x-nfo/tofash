@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 	"strings"
-	adapter "tofash/internal/modules/product"
-	"tofash/internal/modules/product/config"
 	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/handlers/request"
 	"tofash/internal/modules/product/handlers/response"
@@ -12,7 +10,6 @@ import (
 	"tofash/internal/modules/product/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -636,23 +633,6 @@ func (p *productHandler) GetAllAdmin(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func NewProductHandler(e *echo.Echo, cfg *config.Config, productService service.ProductServiceInterface) ProductHandlerInterface {
-	product := &productHandler{service: productService}
-
-	e.Use(middleware.Recover())
-
-	homeProduct := e.Group("/products")
-	homeProduct.GET("/home", product.GetAllHome)
-	homeProduct.GET("/shop", product.GetAllShop)
-	homeProduct.GET("/home/:id", product.GetDetailHome)
-
-	mid := adapter.NewMiddlewareAdapter(cfg)
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/products", product.GetAllAdmin)
-	adminGroup.POST("/products", product.CreateAdmin)
-	adminGroup.GET("/products/:id", product.GetByIDAdmin)
-	adminGroup.PUT("/products/:id", product.EditAdmin)
-	adminGroup.DELETE("/products/:id", product.DeleteAdmin)
-
-	return product
+func NewProductHandler(productService service.ProductServiceInterface) ProductHandlerInterface {
+	return &productHandler{service: productService}
 }

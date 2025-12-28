@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	adapter "tofash/internal/modules/user"
-	"tofash/internal/modules/user/config"
 	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/handler/request"
 	"tofash/internal/modules/user/handler/response"
@@ -15,7 +13,6 @@ import (
 	"tofash/internal/modules/user/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -128,7 +125,7 @@ func (u *userHandler) UpdateCustomer(c echo.Context) error {
 	if req.Lng != 0 {
 		lngString = strconv.FormatFloat(req.Lng, 'g', -1, 64)
 	}
-	phoneString := fmt.Sprintf("%d", req.Phone)
+	phoneString := fmt.Sprintf("%s", req.Phone)
 
 	idParamStr := c.Param("id")
 	if idParamStr == "" {
@@ -776,30 +773,6 @@ func (u *userHandler) SignIn(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func NewUserHandler(e *echo.Echo, userService service.UserServiceInterface, cfg *config.Config, jwtService service.JwtServiceInterface) UserHandlerInterface {
-	userHandler := &userHandler{userService: userService}
-
-	e.Use(middleware.Recover())
-	e.POST("/signin", userHandler.SignIn)
-	e.POST("/signup", userHandler.CreateUserAccount)
-	e.POST("/forgot-password", userHandler.ForgotPassword)
-	e.GET("/verify-account", userHandler.VerifyAccount)
-	e.PUT("/update-password", userHandler.UpdatePassword)
-
-	mid := adapter.NewMiddlewareAdapter(cfg, jwtService)
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/customers", userHandler.GetCustomerAll)
-	adminGroup.POST("/customers", userHandler.CreateCustomer)
-	adminGroup.PUT("/customers/:id", userHandler.UpdateCustomer)
-	adminGroup.GET("/customers/:id", userHandler.GetCustomerByID)
-	adminGroup.DELETE("/customers/:id", userHandler.DeleteCustomer)
-	adminGroup.GET("/check", func(c echo.Context) error {
-		return c.String(200, "OK")
-	})
-
-	authGroup := e.Group("/auth", mid.CheckToken())
-	authGroup.GET("/profile", userHandler.GetProfileUser)
-	authGroup.PUT("/profile", userHandler.UpdateDataUser)
-
-	return userHandler
+func NewUserHandler(userService service.UserServiceInterface) UserHandlerInterface {
+	return &userHandler{userService: userService}
 }

@@ -3,9 +3,9 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"notification-service/config"
-	"notification-service/internal/adapter/message"
+	"tofash/internal/config"
 	"tofash/internal/modules/notification/entity"
+	"tofash/internal/modules/notification/message"
 	"tofash/internal/modules/notification/repository"
 	"tofash/internal/modules/notification/service"
 
@@ -23,8 +23,10 @@ type consumeRabbitMQ struct {
 }
 
 // ConsumeMessage implements ConsumeRabbitMQInterface.
+// ConsumeMessage implements ConsumeRabbitMQInterface.
 func (c *consumeRabbitMQ) ConsumeMessage(queueName string) error {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	cfg := config.NewConfig()
+	conn, err := config.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[ConsumeMessage-1] Failed to connect to RabbitMQ: %v", err)
 		return err

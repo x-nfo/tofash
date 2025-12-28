@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math"
 	"tofash/internal/modules/product/entity"
-	"tofash/internal/modules/product/internal/core/domain/model"
+	"tofash/internal/modules/product/model"
 
 	"github.com/labstack/gommon/log"
 

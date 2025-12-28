@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 	"tofash/internal/modules/notification/entity"
-	"tofash/internal/modules/notification/internal/core/domain/model"
+	"tofash/internal/modules/notification/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

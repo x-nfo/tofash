@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"tofash/internal/modules/order/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/utils"
 
@@ -26,7 +26,7 @@ type PublishRabbitMQ struct {
 
 // PublishUpdateStatus implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishUpdateStatus(queuename string, orderID int64, status string) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishUpdateStatus-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -80,7 +80,7 @@ func (p *PublishRabbitMQ) PublishUpdateStatus(queuename string, orderID int64, s
 
 // PublishSendPushNotifUpdateStatus implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishSendPushNotifUpdateStatus(message string, queuename string, userID int64) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishSendEmailUpdateStatus-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -143,7 +143,7 @@ func (p *PublishRabbitMQ) PublishSendPushNotifUpdateStatus(message string, queue
 
 // PublishDeleteOrderFromQueue implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishDeleteOrderFromQueue(orderID int64) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishDeleteOrderFromQueue-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -196,7 +196,7 @@ func (p *PublishRabbitMQ) PublishDeleteOrderFromQueue(orderID int64) error {
 
 // PublishSendEmailUpdateStatus implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishSendEmailUpdateStatus(email, message, queuename string, userID int64) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishSendEmailUpdateStatus-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -259,7 +259,7 @@ func (p *PublishRabbitMQ) PublishSendEmailUpdateStatus(email, message, queuename
 
 // PublishOrderToQueue implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishOrderToQueue(order entity.OrderEntity) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishOrderToQueue-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -309,7 +309,7 @@ func (p *PublishRabbitMQ) PublishOrderToQueue(order entity.OrderEntity) error {
 
 // PublishUpdateStock implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) PublishUpdateStock(productID int64, quantity int64) {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishUpdateStock-1] Failed to connect to RabbitMQ: %v", err)
 		return

@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"tofash/internal/modules/user/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/user/utils"
 
 	"github.com/labstack/gommon/log"
@@ -10,7 +10,7 @@ import (
 )
 
 func PublishMessage(userId int64, email, message, queueName, subject string) error {
-	conn, err := config.NewConfig().NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(config.NewConfig().RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishMessage-1] Failed to connect to RabbitMQ: %v", err)
 		return err

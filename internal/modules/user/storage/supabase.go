@@ -2,7 +2,7 @@ package storage
 
 import (
 	"io"
-	"tofash/internal/modules/user/config"
+	"tofash/internal/config"
 
 	"github.com/labstack/gommon/log"
 	storage_go "github.com/supabase-community/storage-go"

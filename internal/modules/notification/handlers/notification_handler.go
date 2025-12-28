@@ -3,15 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"notification-service/internal/adapter"
-	"notification-service/internal/core/domain/entity"
-	"notification-service/utils/conv"
-	"tofash/internal/modules/notification/config"
+	"tofash/internal/modules/notification/entity"
 	"tofash/internal/modules/notification/handlers/response"
 	"tofash/internal/modules/notification/service"
+	"tofash/internal/shared/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -187,14 +184,6 @@ func (n *notificationHandler) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.ResponseWithPagination("success", respNotifes, page, totalData, totalPage, perPage))
 }
 
-func NewNotificationHandler(service service.NotificationServiceInterface, e *echo.Echo, cfg *config.Config) NotificationHandlerInterface {
-	notifHandler := &notificationHandler{service: service}
-
-	e.Use(middleware.Recover())
-	mid := adapter.NewMiddlewareAdapter(cfg)
-	authGroup := e.Group("auth", mid.CheckToken())
-	authGroup.GET("/notifications", notifHandler.GetAll)
-	authGroup.GET("/notifications/:id", notifHandler.GetByID)
-	authGroup.PUT("/notifications/:id", notifHandler.MarkAsRead)
-	return notifHandler
+func NewNotificationHandler(service service.NotificationServiceInterface) NotificationHandlerInterface {
+	return &notificationHandler{service: service}
 }

@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	adapter "tofash/internal/modules/user"
-	"tofash/internal/modules/user/config"
 	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/handler/request"
 	"tofash/internal/modules/user/handler/response"
 	"tofash/internal/modules/user/service"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -348,17 +345,6 @@ func (r *roleHandler) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func NewRoleHandler(e *echo.Echo, roleService service.RoleServiceInterface, cfg *config.Config, jwtService service.JwtServiceInterface) RoleHandlerInterface {
-	role := &roleHandler{roleService: roleService}
-
-	e.Use(middleware.Recover())
-	mid := adapter.NewMiddlewareAdapter(cfg, jwtService)
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/roles", role.GetAll)
-	adminGroup.POST("/roles", role.Create)
-	adminGroup.PUT("/roles/{id}", role.Update)
-	adminGroup.DELETE("/roles/{id}", role.Delete)
-	adminGroup.GET("/roles/{id}", role.GetByID)
-
-	return role
+func NewRoleHandler(roleService service.RoleServiceInterface) RoleHandlerInterface {
+	return &roleHandler{roleService: roleService}
 }

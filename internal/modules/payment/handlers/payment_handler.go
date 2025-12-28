@@ -2,17 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+
 	"net/http"
-	"payment-service/config"
-	"payment-service/internal/adapter"
-	"payment-service/internal/core/domain/entity"
+	"tofash/internal/modules/payment/entity"
 	"tofash/internal/modules/payment/handlers/request"
 	"tofash/internal/modules/payment/handlers/response"
 	"tofash/internal/modules/payment/service"
-	"tofash/internal/modules/payment/utils/conv"
+	"tofash/internal/shared/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -28,24 +26,10 @@ type paymentHandler struct {
 	paymentService service.PaymentServiceInterface
 }
 
-func NewPaymentHandler(paymentService service.PaymentServiceInterface, e *echo.Echo, cfg *config.Config) PaymentHandlerInterface {
-	paymentHandler := &paymentHandler{
+func NewPaymentHandler(paymentService service.PaymentServiceInterface) PaymentHandlerInterface {
+	return &paymentHandler{
 		paymentService: paymentService,
 	}
-	e.Use(middleware.Recover())
-	mid := adapter.NewMiddlewareAdapter(cfg)
-	e.POST("/payments/webhook", paymentHandler.MidtranswebHookHandler)
-	authGroup := e.Group("auth", mid.CheckToken())
-	authGroup.GET("/payments", paymentHandler.GetAllCustomer)
-	authGroup.GET("/payments/:id", paymentHandler.GetDetail)
-	authGroup.POST("/payments", paymentHandler.Create)
-
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/payments", paymentHandler.GetAllAdmin)
-	adminGroup.GET("/payments/:id", paymentHandler.GetDetail)
-
-	return paymentHandler
-
 }
 
 func (ph *paymentHandler) GetDetail(c echo.Context) error {

@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	adapter "tofash/internal/modules/order"
-	"tofash/internal/modules/order/config"
 	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/handlers/request"
 	"tofash/internal/modules/order/handlers/response"
@@ -12,7 +10,6 @@ import (
 	"tofash/internal/modules/order/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -486,23 +483,6 @@ func (o *orderHandler) GetAllAdmin(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.ResponseSuccessWithPagination("success", respOrders, page, totalData, totalPage, perPage))
 }
 
-func NewOrderHandler(orderService service.OrderServiceInterface, e *echo.Echo, cfg *config.Config) OrderHandlerInterface {
-	ordHandler := &orderHandler{orderService: orderService}
-
-	e.Use(middleware.Recover())
-	mid := adapter.NewMiddlewareAdapter(cfg)
-	e.GET("public/orders/:orderCode/code", ordHandler.GetPublicOrderByOrderCode)
-	authGroup := e.Group("auth", mid.CheckToken())
-	authGroup.POST("/orders", ordHandler.CreateOrder, mid.DistanceCheck())
-	authGroup.GET("/orders", ordHandler.GetAllCustomer)
-	authGroup.GET("/orders/:orderID", ordHandler.GetDetailCustomer)
-	authGroup.GET("/orders/:orderCode/code", ordHandler.GetOrderByOrderCode)
-
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/orders", ordHandler.GetAllAdmin)
-	adminGroup.GET("/orders/:orderID", ordHandler.GetByIDAdmin)
-	adminGroup.PUT("/orders/:orderID/status", ordHandler.UpdateStatus)
-	adminGroup.DELETE("/orders/:orderID", ordHandler.DeleteByID)
-
-	return ordHandler
+func NewOrderHandler(orderService service.OrderServiceInterface) OrderHandlerInterface {
+	return &orderHandler{orderService: orderService}
 }

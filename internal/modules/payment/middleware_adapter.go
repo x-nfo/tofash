@@ -3,10 +3,10 @@ package adapter
 import (
 	"encoding/json"
 	"net/http"
-	"payment-service/config"
-	"payment-service/internal/adapter/handlers/response"
-	"payment-service/internal/core/domain/entity"
 	"strings"
+	"tofash/internal/config"
+	"tofash/internal/modules/payment/entity"
+	"tofash/internal/modules/payment/handlers/response"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"

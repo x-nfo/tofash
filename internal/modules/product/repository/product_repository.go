@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"tofash/internal/modules/product/entity"
-	"tofash/internal/modules/product/internal/core/domain/model"
+	"tofash/internal/modules/product/model"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/labstack/gommon/log"

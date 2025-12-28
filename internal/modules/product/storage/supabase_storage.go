@@ -2,7 +2,7 @@ package storage
 
 import (
 	"io"
-	"tofash/internal/modules/product/config"
+	"tofash/internal/config"
 
 	"github.com/labstack/gommon/log"
 

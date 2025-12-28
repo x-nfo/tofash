@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"tofash/internal/modules/product/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/product/entity"
 
 	"github.com/labstack/gommon/log"
@@ -25,7 +25,7 @@ func NewPublishRabbitMQ(cfg *config.Config) PublishRabbitMQInterface {
 
 // DeleteProductFromQueue implements PublishRabbitMQInterface.
 func (p *PublishRabbitMQ) DeleteProductFromQueue(productID int64) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[DeleteProductFromQueue-1] Failed to connect to RabbitMQ: %v", err)
 		return err
@@ -73,7 +73,7 @@ func (p *PublishRabbitMQ) DeleteProductFromQueue(productID int64) error {
 }
 
 func (p *PublishRabbitMQ) PublishProductToQueue(product entity.ProductEntity) error {
-	conn, err := p.cfg.NewRabbitMQ()
+	conn, err := config.NewRabbitMQ(p.cfg.RabbitMQ)
 	if err != nil {
 		log.Errorf("[PublishProductToQueue-1] Failed to connect to RabbitMQ: %v", err)
 		return err

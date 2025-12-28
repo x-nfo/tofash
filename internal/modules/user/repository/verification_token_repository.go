@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 	"tofash/internal/modules/user/entity"
-	"tofash/internal/modules/user/internal/core/domain/model"
+	"tofash/internal/modules/user/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

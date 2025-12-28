@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	adapter "tofash/internal/modules/product"
-	"tofash/internal/modules/product/config"
 	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/handlers/request"
 	"tofash/internal/modules/product/handlers/response"
@@ -11,7 +9,6 @@ import (
 	"tofash/internal/modules/product/utils/conv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -415,24 +412,8 @@ func (ch *categoryHandler) GetAllAdmin(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func NewCategoryHandler(e *echo.Echo, categoryService service.CategoryServiceInterface, cfg *config.Config) CategoryHandlerInterface {
-	category := &categoryHandler{categoryService: categoryService}
-
-	categoryApp := e.Group("/categories")
-	categoryApp.GET("/home", category.GetAllHome)
-	categoryApp.GET("/shop", category.GetAllShop)
-
-	e.Use(middleware.Recover())
-	mid := adapter.NewMiddlewareAdapter(cfg)
-	adminGroup := e.Group("/admin", mid.CheckToken())
-	adminGroup.GET("/categories", category.GetAllAdmin)
-	adminGroup.GET("/categories/:id", category.GetByIDAdmin)
-	adminGroup.GET("/categories/:slug/slug", category.GetBySlugAdmin)
-	adminGroup.POST("/categories", category.Create)
-	adminGroup.PUT("/categories/:id", category.Update)
-	adminGroup.DELETE("/categories/:id", category.Delete)
-
-	return category
+func NewCategoryHandler(categoryService service.CategoryServiceInterface) CategoryHandlerInterface {
+	return &categoryHandler{categoryService: categoryService}
 }
 
 func RekursifCategory(results []entity.CategoryEntity, parentID *int64, level int) []response.CategoryListShopResponse {

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"tofash/internal/modules/product/internal/core/domain/model"
+	"tofash/internal/modules/product/model"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"

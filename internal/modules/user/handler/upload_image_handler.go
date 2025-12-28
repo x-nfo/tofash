@@ -6,11 +6,11 @@ import (
 	"io"
 	"net/http"
 	"time"
-	adapter "tofash/internal/modules/user"
-	"tofash/internal/modules/user/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/user/handler/response"
 	"tofash/internal/modules/user/service"
 	"tofash/internal/modules/user/storage"
+	"tofash/internal/shared/middleware"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -86,8 +86,9 @@ func NewUploadImage(e *echo.Echo, cfg *config.Config, storageHandler storage.Sup
 		storageHandler: storageHandler,
 	}
 
-	mid := adapter.NewMiddlewareAdapter(cfg, jwtService)
-	e.POST("/auth/profile/image-upload", res.UploadImage, mid.CheckToken())
+	// Ideally Main should setup routes, but for legacy compat:
+	mid := middleware.NewAuthMiddleware(cfg, jwtService)
+	e.POST("/auth/profile/image-upload", res.UploadImage, mid.CheckToken)
 
 	return res
 }

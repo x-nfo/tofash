@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"tofash/internal/modules/order/config"
+	"tofash/internal/config"
 	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/handlers/response"
 
