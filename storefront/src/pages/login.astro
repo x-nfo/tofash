@@ -158,15 +158,22 @@ let success = "";
                 });
 
                 if (response.status && response.data) {
-                    // Update global store
+                    // 1. Update Nano Store
                     setUser(response.data);
 
-                    // Set Cookies
-                    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Strict`;
-                    document.cookie = `user_role=${response.data.role_name}; path=/; max-age=86400; SameSite=Strict`;
+                    // 2. SET COOKIES (Crucial for Middleware)
+                    // Expires in 1 day (86400 seconds)
+                    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; Secure; SameSite=Lax`;
+                    document.cookie = `user_role=${response.data.role_name || response.data.role}; path=/; max-age=86400; Secure; SameSite=Lax`;
 
-                    // Redirect
-                    window.location.href = "/";
+                    // 3. Redirect
+                    // Check if there was a redirect param or default to home/admin
+                    const role = response.data.role_name || response.data.role;
+                    if (role === "admin") {
+                        window.location.href = "/admin/dashboard";
+                    } else {
+                        window.location.href = "/";
+                    }
                 } else {
                     alert(response.message || "Login failed");
                 }

@@ -32,6 +32,7 @@ export interface User {
     email: string;
     name: string;
     role_name: string;
+    role?: string; // Some responses might use 'role' instead of 'role_name'
     access_token?: string;
 }
 

@@ -1,37 +1,26 @@
-
 import { defineMiddleware } from "astro:middleware";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-    const { request, cookies, redirect } = context;
-    const url = new URL(request.url);
+    // 1. Get tokens from cookies
+    const token = context.cookies.get("access_token")?.value;
+    const role = context.cookies.get("user_role")?.value;
+    const path = context.url.pathname;
 
-    // Get tokens from cookies
-    const accessToken = cookies.get("access_token")?.value;
-    const userRole = cookies.get("user_role")?.value;
-
-    // 1. Admin Protection
-    if (url.pathname.startsWith("/admin")) {
-        // Allow public admin assets or login if we had an admin specific login,
-        // but typically /admin/login is the entry.
-        // If the path IS /admin/login, allow it.
-        if (url.pathname === "/admin/login") {
-            return next();
-        }
-
-        if (!accessToken || userRole !== "admin") {
-            return redirect("/login");
+    // 2. PROTECT ADMIN ROUTES
+    // If user tries to access /admin* without being an 'admin', redirect to login
+    if (path.startsWith("/admin")) {
+        if (!token || role !== "admin") {
+            return context.redirect("/login");
         }
     }
 
-    // 2. User Protection (Checkout, Account)
-    if (url.pathname.startsWith("/checkout")) {
-        if (!accessToken) {
-            return redirect("/login");
+    // 3. PROTECT CHECKOUT (Optional but recommended)
+    // If user tries to checkout without login, redirect to login
+    if (path.startsWith("/checkout")) {
+        if (!token) {
+            return context.redirect("/login");
         }
     }
-
-    // Pass locals if needed (optional for this task but good practice)
-    context.locals.user = accessToken ? { role: userRole } : null;
 
     return next();
 });
