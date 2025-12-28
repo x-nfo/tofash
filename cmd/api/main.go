@@ -55,11 +55,6 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// 3. Setup Dependencies
-	// Elasticsearch
-	esClient, err := config.InitElasticsearch(cfg.ElasticSearch)
-	if err != nil {
-		log.Fatalf("Failed to initialize Elasticsearch: %v", err)
-	}
 
 	// 4. WIRING: User Module
 	userRepository := userRepo.NewUserRepository(db)
@@ -86,7 +81,7 @@ func main() {
 	redisClient := cfg.NewRedisClient()
 
 	// 5. WIRING: Product Module
-	productRepository := productRepo.NewProductRepository(db, esClient)
+	productRepository := productRepo.NewProductRepository(db)
 	categoryRepository := productRepo.NewCategoryRepository(db)
 	cartRepository := productRepo.NewCartRedisRepository(redisClient)
 	productPublisher := productMessage.NewPublishRabbitMQ(cfg)
@@ -101,7 +96,6 @@ func main() {
 
 	// 6. WIRING: Order Module
 	orderRepository := orderRepo.NewOrderRepository(db)
-	elasticRepo := orderRepo.NewElasticRepository(esClient)
 	// RabbitMQ Publisher
 	orderPublisher := orderMessage.NewPublisherRabbitMQ(cfg)
 
@@ -109,7 +103,6 @@ func main() {
 		orderRepository,
 		cfg,
 		orderPublisher,
-		elasticRepo,
 		productSvc,
 		userSvc,
 	)

@@ -33,7 +33,6 @@ type orderService struct {
 	productSvc        productService.ProductServiceInterface
 	userSvc           userService.UserServiceInterface
 	publisherRabbitMQ message.PublishRabbitMQInterface
-	elasticRepo       repository.ElasticRepositoryInterface
 }
 
 // GetPublicOrderIDByOrderCode implements OrderServiceInterface.
@@ -139,14 +138,7 @@ func (o *orderService) GetDetailCustomer(ctx context.Context, orderID int64) (*e
 
 // GetAllCustomer implements OrderServiceInterface.
 func (o *orderService) GetAllCustomer(ctx context.Context, queryString entity.QueryStringEntity) ([]entity.OrderEntity, int64, int64, error) {
-	results, count, total, err := o.elasticRepo.SearchOrderElasticByBuyerId(ctx, queryString, queryString.BuyerID)
-	if err == nil {
-		return results, count, total, nil
-	} else {
-		log.Errorf("[OrderService-1] GetAllCustomer: %v", err)
-	}
-
-	results, count, total, err = o.repo.GetAll(ctx, queryString)
+	results, count, total, err := o.repo.GetAll(ctx, queryString)
 	if err != nil {
 		log.Errorf("[OrderService-2] GetAllCustomer: %v", err)
 		return nil, 0, 0, err
@@ -272,14 +264,7 @@ func (o *orderService) GetByID(ctx context.Context, orderID int64) (*entity.Orde
 
 // GetAll implements OrderServiceInterface.
 func (o *orderService) GetAll(ctx context.Context, queryString entity.QueryStringEntity) ([]entity.OrderEntity, int64, int64, error) {
-	results, count, total, err := o.elasticRepo.SearchOrderElastic(ctx, queryString)
-	if err == nil {
-		return results, count, total, nil
-	} else {
-		log.Errorf("[OrderService-1] GetAll: %v", err)
-	}
-
-	results, count, total, err = o.repo.GetAll(ctx, queryString)
+	results, count, total, err := o.repo.GetAll(ctx, queryString)
 	if err != nil {
 		log.Errorf("[OrderService-2] GetAll: %v", err)
 		return nil, 0, 0, err
@@ -309,12 +294,11 @@ func (o *orderService) GetAll(ctx context.Context, queryString entity.QueryStrin
 	return results, count, total, nil
 }
 
-func NewOrderService(repo repository.OrderRepositoryInterface, cfg *config.Config, publisherRabbitMQ message.PublishRabbitMQInterface, elasticRepo repository.ElasticRepositoryInterface, productSvc productService.ProductServiceInterface, userSvc userService.UserServiceInterface) OrderServiceInterface {
+func NewOrderService(repo repository.OrderRepositoryInterface, cfg *config.Config, publisherRabbitMQ message.PublishRabbitMQInterface, productSvc productService.ProductServiceInterface, userSvc userService.UserServiceInterface) OrderServiceInterface {
 	return &orderService{
 		repo:              repo,
 		cfg:               cfg,
 		publisherRabbitMQ: publisherRabbitMQ,
-		elasticRepo:       elasticRepo,
 		productSvc:        productSvc,
 		userSvc:           userSvc,
 	}
