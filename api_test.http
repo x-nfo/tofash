@@ -1,0 +1,36 @@
+# api_test.http
+
+# -------------------------------------------------
+# 1. Health check
+GET http://localhost:8080/health
+Accept: application/json
+
+# -------------------------------------------------
+# 2. List all products (public endpoint)
+GET http://localhost:8080/api/v1/products
+Accept: application/json
+
+# -------------------------------------------------
+# 3. Get a single product (replace ID as needed)
+GET http://localhost:8080/api/v1/products/1
+Accept: application/json
+
+# -------------------------------------------------
+# 4. Create an order (secured endpoint – requires JWT)
+# Define a JWT token in a .env file or replace manually.
+POST http://localhost:8080/api/v1/orders
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "user_id": "user-123",
+  "items": [
+    {"product_id": "prod-001", "quantity": 2}
+  ]
+}
+
+# -------------------------------------------------
+# 5. Get orders for the authenticated user (secured)
+GET http://localhost:8080/api/v1/orders
+Accept: application/json
+Authorization: Bearer {{jwt_token}}

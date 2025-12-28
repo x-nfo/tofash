@@ -95,6 +95,10 @@ type EmailConf struct {
 }
 
 func LoadConfig() *Config {
+	viper.SetConfigFile(".env")
+	viper.ReadInConfig()
+	viper.AutomaticEnv()
+
 	return &Config{
 		App: App{
 			AppPort: viper.GetString("APP_PORT"),

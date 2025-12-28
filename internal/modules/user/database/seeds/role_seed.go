@@ -11,6 +11,9 @@ import (
 func SeedRole(db *gorm.DB) {
 	roles := []model.Role{
 		{
+			Name: "Super Admin",
+		},
+		{
 			Name: "Admin",
 		},
 		{

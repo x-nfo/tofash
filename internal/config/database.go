@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	orderModel "tofash/internal/modules/order/model"
+	productSeeds "tofash/internal/modules/product/database/seeds"
 	productModel "tofash/internal/modules/product/model"
 	"tofash/internal/modules/user/database/seeds"
 	userModel "tofash/internal/modules/user/model"
@@ -92,6 +93,7 @@ func InitDatabase(cfg *Config) *gorm.DB {
 	// Seeds (User module has seeds)
 	seeds.SeedRole(db)
 	seeds.SeedAdmin(db)
+	productSeeds.SeedProduct(db)
 
 	sqlDB.SetMaxOpenConns(cfg.Psql.DBMaxOpen)
 	sqlDB.SetMaxIdleConns(cfg.Psql.DBMaxIdle)

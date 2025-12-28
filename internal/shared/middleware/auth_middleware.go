@@ -7,6 +7,7 @@ import (
 	"tofash/internal/config"
 	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/service"
+	"tofash/internal/stubs"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -38,12 +39,9 @@ func (m *AuthMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 		// Create Redis client on the fly? Ideally inject it.
 		// For now using Config to create it as in original adapter
+		// Create Redis client on the fly? Ideally inject it.
+		// For now using Config to create it as in original adapter
 		redisConn := m.cfg.NewRedisClient()
-		// Better: pass Redis client to struct. But original did NewRedisClient() every time?
-		// Original: redisConn := config.NewConfig().NewRedisClient() -> this created NEW config every request
-		// Here m.cfg is reused. But NewRedisClient creates NEW client every request?
-		// Redis client is thread safe, should be reused.
-		// I will refactor to use injected Redis client if possible, but let's stick to working pattern first.
 
 		authHeader := c.Request().Header.Get("Authorization")
 		if authHeader == "" {
@@ -61,13 +59,25 @@ func (m *AuthMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, respErr)
 		}
 
-		getSession, err := redisConn.Get(c.Request().Context(), tokenString).Result()
-		if err != nil || len(getSession) == 0 {
-			log.Errorf("[Middleware] CheckToken: %s", "session not found/expired")
-			respErr.Message = "session not found or expired"
-			return c.JSON(http.StatusUnauthorized, respErr)
+		var getSession string
+		if redisConn == nil {
+			// STUB Logic
+			var errSes error
+			getSession, errSes = stubs.GetSession(tokenString)
+			if errSes != nil {
+				log.Errorf("[Middleware-Stub] CheckToken: %s", "session not found/expired")
+				respErr.Message = "session not found or expired"
+				return c.JSON(http.StatusUnauthorized, respErr)
+			}
+		} else {
+			var errSes error
+			getSession, errSes = redisConn.Get(c.Request().Context(), tokenString).Result()
+			if errSes != nil || len(getSession) == 0 {
+				log.Errorf("[Middleware] CheckToken: %s", "session not found/expired")
+				respErr.Message = "session not found or expired"
+				return c.JSON(http.StatusUnauthorized, respErr)
+			}
 		}
-
 		jwtUserData := entity.JwtUserData{}
 		err = json.Unmarshal([]byte(getSession), &jwtUserData)
 		if err != nil {

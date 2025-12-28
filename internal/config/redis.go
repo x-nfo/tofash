@@ -18,7 +18,8 @@ func (cfg Config) NewRedisClient() *redis.Client {
 	// Memastikan Redis terhubung
 	_, err := client.Ping(Ctx).Result()
 	if err != nil {
-		panic(err)
+		fmt.Printf("[Config] Redis connection failed (running without Redis): %v\n", err)
+		return nil
 	}
 
 	return client

@@ -16,6 +16,31 @@ import (
 	"gorm.io/gorm"
 )
 
+// Helper functions for JSON image conversion
+func imagesToJSON(images []string) string {
+	if len(images) == 0 {
+		return ""
+	}
+	data, err := json.Marshal(images)
+	if err != nil {
+		log.Errorf("Failed to marshal images: %v", err)
+		return ""
+	}
+	return string(data)
+}
+
+func jsonToImages(jsonStr string) []string {
+	if jsonStr == "" {
+		return []string{}
+	}
+	var images []string
+	if err := json.Unmarshal([]byte(jsonStr), &images); err != nil {
+		log.Errorf("Failed to unmarshal images: %v", err)
+		return []string{}
+	}
+	return images
+}
+
 type ProductRepositoryInterface interface {
 	GetAll(ctx context.Context, query entity.QueryStringProduct) ([]entity.ProductEntity, int64, int64, error)
 	GetByID(ctx context.Context, productID int64) (*entity.ProductEntity, error)
@@ -47,17 +72,18 @@ func (p *productRepository) Delete(ctx context.Context, productID int64) error {
 		return err
 	}
 
-	res, err := p.esClient.Delete(
-		"products",
-		strconv.Itoa(int(productID)),
-		p.esClient.Delete.WithRefresh("true"),
-	)
-	if err != nil {
-		log.Errorf("[ProductRepository-3] Delete: %v", err)
-		return err
+	if p.esClient != nil {
+		res, err := p.esClient.Delete(
+			"products",
+			strconv.Itoa(int(productID)),
+			p.esClient.Delete.WithRefresh("true"),
+		)
+		if err != nil {
+			log.Errorf("[ProductRepository-3] Delete: %v", err)
+			return err
+		}
+		defer res.Body.Close()
 	}
-
-	defer res.Body.Close()
 	log.Infof("[ProductRepository-4] Delete Product Elasticsearch: %d", productID)
 
 	return nil
@@ -86,6 +112,12 @@ func (p *productRepository) Update(ctx context.Context, req entity.ProductEntity
 	modelProduct.Weight = req.Weight
 	modelProduct.Stock = req.Stock
 	modelProduct.Variant = req.Variant
+	// Fashion fields
+	modelProduct.SKU = req.SKU
+	modelProduct.Size = req.Size
+	modelProduct.Color = req.Color
+	modelProduct.Material = req.Material
+	modelProduct.ImagesJSON = imagesToJSON(req.Images)
 	modelProduct.Status = req.Status
 
 	if err := p.db.Save(&modelProduct).Error; err != nil {
@@ -113,7 +145,13 @@ func (p *productRepository) Update(ctx context.Context, req entity.ProductEntity
 				Weight:       val.Weight,
 				Stock:        val.Stock,
 				Variant:      req.Variant,
-				Status:       req.Status,
+				// Fashion fields for child
+				SKU:        val.SKU,
+				Size:       val.Size,
+				Color:      val.Color,
+				Material:   val.Material,
+				ImagesJSON: imagesToJSON(val.Images),
+				Status:     req.Status,
 			})
 		}
 
@@ -140,7 +178,13 @@ func (p *productRepository) Create(ctx context.Context, req entity.ProductEntity
 		Weight:       req.Weight,
 		Stock:        req.Stock,
 		Variant:      req.Variant,
-		Status:       req.Status,
+		// Fashion fields
+		SKU:        req.SKU,
+		Size:       req.Size,
+		Color:      req.Color,
+		Material:   req.Material,
+		ImagesJSON: imagesToJSON(req.Images),
+		Status:     req.Status,
 	}
 
 	if err := p.db.Create(&modelProduct).Error; err != nil {
@@ -163,7 +207,13 @@ func (p *productRepository) Create(ctx context.Context, req entity.ProductEntity
 				Weight:       val.Weight,
 				Stock:        val.Stock,
 				Variant:      req.Variant,
-				Status:       req.Status,
+				// Fashion fields for child variants
+				SKU:        val.SKU,
+				Size:       val.Size,
+				Color:      val.Color,
+				Material:   val.Material,
+				ImagesJSON: imagesToJSON(val.Images),
+				Status:     req.Status,
 			})
 		}
 
@@ -203,6 +253,7 @@ func (p *productRepository) GetByID(ctx context.Context, productID int64) (*enti
 			ParentID:     val.ParentID,
 			Name:         val.Name,
 			Image:        val.Image,
+			Images:       jsonToImages(val.ImagesJSON),
 			Description:  val.Description,
 			RegulerPrice: val.RegulerPrice,
 			SalePrice:    val.SalePrice,
@@ -210,6 +261,11 @@ func (p *productRepository) GetByID(ctx context.Context, productID int64) (*enti
 			Weight:       val.Weight,
 			Stock:        val.Stock,
 			Variant:      val.Variant,
+			// Fashion fields
+			SKU:          val.SKU,
+			Size:         val.Size,
+			Color:        val.Color,
+			Material:     val.Material,
 			Status:       val.Status,
 			CategoryName: val.Category.Name,
 			Child:        childEntities,
@@ -223,6 +279,7 @@ func (p *productRepository) GetByID(ctx context.Context, productID int64) (*enti
 		ParentID:     modelProduct.ParentID,
 		Name:         modelProduct.Name,
 		Image:        modelProduct.Image,
+		Images:       jsonToImages(modelProduct.ImagesJSON),
 		Description:  modelProduct.Description,
 		RegulerPrice: modelProduct.RegulerPrice,
 		SalePrice:    modelProduct.SalePrice,
@@ -230,6 +287,11 @@ func (p *productRepository) GetByID(ctx context.Context, productID int64) (*enti
 		Weight:       modelProduct.Weight,
 		Stock:        modelProduct.Stock,
 		Variant:      modelProduct.Variant,
+		// Fashion fields
+		SKU:          modelProduct.SKU,
+		Size:         modelProduct.Size,
+		Color:        modelProduct.Color,
+		Material:     modelProduct.Material,
 		Status:       modelProduct.Status,
 		CategoryName: modelProduct.Category.Name,
 		Child:        childEntities,
@@ -239,6 +301,11 @@ func (p *productRepository) GetByID(ctx context.Context, productID int64) (*enti
 
 // GetAll implements ProductRepositoryInterface.
 func (p *productRepository) SearchProducts(ctx context.Context, query entity.QueryStringProduct) ([]entity.ProductEntity, int64, int64, error) {
+	// Fallback to SQL if ES is not available
+	if p.esClient == nil {
+		return p.GetAll(ctx, query)
+	}
+
 	var mainQueries []string
 	var filterQueries []string
 	from := (query.Page - 1) * query.Limit
@@ -388,6 +455,7 @@ func (p *productRepository) GetAll(ctx context.Context, query entity.QueryString
 			ParentID:     val.ParentID,
 			Name:         val.Name,
 			Image:        val.Image,
+			Images:       jsonToImages(val.ImagesJSON),
 			Description:  val.Description,
 			RegulerPrice: val.RegulerPrice,
 			SalePrice:    val.SalePrice,
@@ -395,6 +463,11 @@ func (p *productRepository) GetAll(ctx context.Context, query entity.QueryString
 			Weight:       val.Weight,
 			Stock:        val.Stock,
 			Variant:      val.Variant,
+			// Fashion fields
+			SKU:          val.SKU,
+			Size:         val.Size,
+			Color:        val.Color,
+			Material:     val.Material,
 			Status:       val.Status,
 			CategoryName: val.Category.Name,
 			CreatedAt:    val.CreatedAt,

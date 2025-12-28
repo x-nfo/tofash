@@ -12,9 +12,23 @@ func InitElasticsearch(cfg ElasticSearch) (*elasticsearch.Client, error) {
 	}
 	es, err := elasticsearch.NewClient(configElastic)
 	if err != nil {
-		log.Fatalf("[InitElasticsearch] Error initializing Elasticsearch: %s", err)
-		return nil, err
+		log.Printf("[InitElasticsearch] Error creating client: %s", err)
+		return nil, nil // Return nil client, but no fatal error to allow app to start
 	}
 
+	// Verify connection
+	res, err := es.Info()
+	if err != nil {
+		log.Printf("[InitElasticsearch] Connection failed (running without ES): %s", err)
+		return nil, nil
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		log.Printf("[InitElasticsearch] Connection Error: %s", res.String())
+		return nil, nil
+	}
+
+	log.Println("[InitElasticsearch] Connected successfully")
 	return es, nil
 }
