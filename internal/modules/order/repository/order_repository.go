@@ -46,6 +46,9 @@ func (o *orderRepository) GetOrderByOrderCode(ctx context.Context, orderCode str
 			ID:        item.ID,
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
+			Size:      item.Size,
+			Color:     item.Color,
+			SKU:       item.SKU,
 		})
 	}
 
@@ -76,6 +79,9 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req entity.OrderEntit
 		orderItem := model.OrderItem{
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
+			Size:      item.Size,
+			Color:     item.Color,
+			SKU:       item.SKU,
 		}
 		orderItems = append(orderItems, orderItem)
 	}
@@ -206,6 +212,9 @@ func (o *orderRepository) GetAll(ctx context.Context, queryString entity.QuerySt
 				ID:        item.ID,
 				ProductID: item.ProductID,
 				Quantity:  item.Quantity,
+				Size:      item.Size,
+				Color:     item.Color,
+				SKU:       item.SKU,
 			})
 		}
 		entities = append(entities, entity.OrderEntity{
@@ -242,6 +251,9 @@ func (o *orderRepository) GetByID(ctx context.Context, orderID int64) (*entity.O
 			ID:        item.ID,
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
+			Size:      item.Size,
+			Color:     item.Color,
+			SKU:       item.SKU,
 		})
 	}
 

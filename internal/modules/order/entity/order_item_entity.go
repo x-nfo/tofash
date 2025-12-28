@@ -11,6 +11,9 @@ type OrderItemEntity struct {
 	Price         int64  `json:"price"`
 	ProductUnit   string `json:"product_unit"`
 	ProductWeight int64  `json:"product_weight"`
+	Size          string `json:"size"`
+	Color         string `json:"color"`
+	SKU           string `json:"sku"`
 }
 
 type PublishOrderItemEntity struct {

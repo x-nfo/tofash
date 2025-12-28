@@ -17,11 +17,13 @@ function Invoke-Api {
     try {
         if ($Method -eq "GET") {
             $Response = Invoke-RestMethod -Uri $Url -Method $Method -Headers $Headers
-        } else {
+        }
+        else {
             $Response = Invoke-RestMethod -Uri $Url -Method $Method -Headers $Headers -Body $JsonBody
         }
         return $Response
-    } catch {
+    }
+    catch {
         Write-Error $_.Exception.Message
         if ($_.Exception.Response) {
             $Stream = $_.Exception.Response.GetResponseStream()
@@ -35,7 +37,7 @@ function Invoke-Api {
 # 1. Login
 Write-Host "`n--- 1. Login ---"
 $LoginRes = Invoke-Api -Url "http://localhost:8080/api/v1/login" -Method "POST" -Body @{
-    email = "superadmin@mail.com"
+    email    = "superadmin@mail.com"
     password = "admin123"
 }
 $Token = $LoginRes.token
@@ -58,7 +60,8 @@ $ProductID = 0
 if ($Products.data.Count -gt 0) {
     $ProductID = $Products.data[0].id
     Write-Host "Found existing product ID: $ProductID"
-} else {
+}
+else {
     Write-Host "No products found. Skipping Cart/Order test."
     exit
 }
@@ -67,7 +70,10 @@ if ($Products.data.Count -gt 0) {
 Write-Host "`n--- 3. Add to Cart ---"
 Invoke-Api -Url "http://localhost:8080/api/v1/carts" -Method "POST" -Token $Token -Body @{
     product_id = $ProductID
-    quantity = 2
+    quantity   = 2
+    size       = "M"
+    color      = "Black"
+    sku        = "SKU-TEST-001"
 }
 Write-Host "Added to Cart"
 
@@ -83,11 +89,22 @@ Write-Host "`n--- 5. Create Order ---"
 # Let's inspect the `CreateOrder` handler requirement briefly or just try sending minimal body.
 # `orderH.CreateOrder`
 Invoke-Api -Url "http://localhost:8080/api/v1/orders" -Method "POST" -Token $Token -Body @{
-    address_id = 1
+    address_id        = 1
     payment_method_id = 1
-    couriers_id = 1
-    shipping_service = "JNE"
-    shipping_cost = 10000
-    total_amount = 50000 # This might be calculated backend side?
+    couriers_id       = 1
+    total_amount      = 50000 
+    shipping_type     = "Regular"
+    payment_type      = "Bank Transfer"
+    order_time        = "12:00"
+    order_date        = "2025-01-01"
+    order_details     = @(
+        @{
+            product_id = $ProductID
+            quantity   = 2
+            size       = "M"
+            color      = "Black"
+            sku        = "SKU-TEST-001"
+        }
+    )
 }
 Write-Host "Order Created"

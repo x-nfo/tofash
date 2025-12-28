@@ -25,7 +25,13 @@ Authorization: Bearer {{jwt_token}}
 {
   "user_id": "user-123",
   "items": [
-    {"product_id": "prod-001", "quantity": 2}
+    {
+      "product_id": "prod-001",
+      "quantity": 2,
+      "size": "M",
+      "color": "Red",
+      "sku": "SKU-123456"
+    }
   ]
 }
 

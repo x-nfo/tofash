@@ -94,7 +94,13 @@ func TestCreateOrder(t *testing.T) {
 	e := setupTestServer()
 	payload := map[string]interface{}{
 		"user_id": "user-123",
-		"items":   []map[string]interface{}{{"product_id": "prod-001", "quantity": 2}},
+		"items": []map[string]interface{}{{
+			"product_id": "prod-001",
+			"quantity":   2,
+			"size":       "L",
+			"color":      "Blue",
+			"sku":        "SKU-TEST-999",
+		}},
 	}
 	body, _ := json.Marshal(payload)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/orders", bytes.NewReader(body))

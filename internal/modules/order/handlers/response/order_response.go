@@ -52,4 +52,7 @@ type OrderDetail struct {
 	ProductImage string `json:"product_image"`
 	ProductPrice int64  `json:"product_price"`
 	Quantity     int64  `json:"quantity"`
+	Size         string `json:"size"`
+	Color        string `json:"color"`
+	SKU          string `json:"sku"`
 }

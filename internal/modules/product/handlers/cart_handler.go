@@ -115,6 +115,9 @@ func (ch *CartHandler) AddToCart(c echo.Context) error {
 	reqEntity := entity.CartItem{
 		ProductID: request.ProductID,
 		Quantity:  request.Quantity,
+		Size:      request.Size,
+		Color:     request.Color,
+		SKU:       request.SKU,
 	}
 
 	err = ch.CartService.AddToCart(ctx, userID, reqEntity)

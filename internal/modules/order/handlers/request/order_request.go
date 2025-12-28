@@ -12,8 +12,11 @@ type CreateOrderRequest struct {
 }
 
 type OrderDetailRequest struct {
-	ProductID int64 `json:"product_id" validate:"required"`
-	Quantity  int64 `json:"quantity" validate:"required"`
+	ProductID int64  `json:"product_id" validate:"required"`
+	Quantity  int64  `json:"quantity" validate:"required"`
+	Size      string `json:"size"`
+	Color     string `json:"color"`
+	SKU       string `json:"sku"`
 }
 
 type OrderUpdateStatusRequest struct {

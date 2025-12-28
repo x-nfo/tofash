@@ -97,6 +97,9 @@ func (o *orderHandler) GetOrderByOrderCode(c echo.Context) error {
 			ProductImage: item.ProductImage,
 			ProductPrice: item.Price,
 			Quantity:     item.Quantity,
+			Size:         item.Size,
+			Color:        item.Color,
+			SKU:          item.SKU,
 		})
 	}
 
@@ -181,6 +184,9 @@ func (o *orderHandler) GetDetailCustomer(c echo.Context) error {
 			ProductImage: item.ProductImage,
 			ProductPrice: item.Price,
 			Quantity:     item.Quantity,
+			Size:         item.Size,
+			Color:        item.Color,
+			SKU:          item.SKU,
 		})
 	}
 
@@ -348,6 +354,9 @@ func (o *orderHandler) CreateOrder(c echo.Context) error {
 		orderDetails = append(orderDetails, entity.OrderItemEntity{
 			ProductID: val.ProductID,
 			Quantity:  val.Quantity,
+			Size:      val.Size,
+			Color:     val.Color,
+			SKU:       val.SKU,
 		})
 	}
 
@@ -413,6 +422,9 @@ func (o *orderHandler) GetByIDAdmin(c echo.Context) error {
 			ProductImage: item.ProductImage,
 			ProductPrice: item.Price,
 			Quantity:     item.Quantity,
+			Size:         item.Size,
+			Color:        item.Color,
+			SKU:          item.SKU,
 		})
 	}
 

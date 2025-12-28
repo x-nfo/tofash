@@ -15,4 +15,7 @@ type OrderItem struct {
 	UpdatedAt *time.Time     `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index"`
 	Order     Order          `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Size      string         `gorm:"column:size"`
+	Color     string         `gorm:"column:color"`
+	SKU       string         `gorm:"column:sku"`
 }

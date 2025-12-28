@@ -235,8 +235,14 @@ func TestOrderService_GetAll_Success(t *testing.T) {
 	mockElastic := &mockElasticRepo{searchOrderElasticFn: func(_ context.Context, _ entity.QueryStringEntity) ([]entity.OrderEntity, int64, int64, error) {
 		return nil, 0, 0, errors.New("elastic not available")
 	}}
+	mockUserSvc := &mockUserService{getByIDFn: func(_ context.Context, _ int64) (*userEntity.UserEntity, error) {
+		return &userEntity.UserEntity{ID: 10, Name: "User"}, nil
+	}}
+	mockProductSvc := &mockProductService{getByIDFn: func(_ context.Context, _ int64) (*productEntity.ProductEntity, error) {
+		return &productEntity.ProductEntity{ID: 1, Name: "Product"}, nil
+	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, nil, mockElastic, nil, nil)
+	svc := NewOrderService(mockRepo, cfg, nil, mockElastic, mockProductSvc, mockUserSvc)
 	result, total, page, err := svc.GetAll(ctx, entity.QueryStringEntity{})
 	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
@@ -254,8 +260,11 @@ func TestOrderService_GetByID_Success(t *testing.T) {
 	mockUserSvc := &mockUserService{getByIDFn: func(_ context.Context, _ int64) (*userEntity.UserEntity, error) {
 		return user, nil
 	}}
+	mockProductSvc := &mockProductService{getByIDFn: func(_ context.Context, _ int64) (*productEntity.ProductEntity, error) {
+		return &productEntity.ProductEntity{ID: 1, Name: "Product"}, nil
+	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, nil, nil, nil, mockUserSvc)
+	svc := NewOrderService(mockRepo, cfg, nil, nil, mockProductSvc, mockUserSvc)
 	result, err := svc.GetByID(ctx, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "John Doe", result.BuyerName)
@@ -291,8 +300,11 @@ func TestOrderService_CreateOrder_Success(t *testing.T) {
 	mockUserSvc := &mockUserService{getByIDFn: func(_ context.Context, _ int64) (*userEntity.UserEntity, error) {
 		return &userEntity.UserEntity{ID: 10, Name: "John"}, nil
 	}}
+	mockProductSvc := &mockProductService{getByIDFn: func(_ context.Context, _ int64) (*productEntity.ProductEntity, error) {
+		return &productEntity.ProductEntity{ID: 1, Name: "Product"}, nil
+	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, mockPub, mockElastic, nil, mockUserSvc)
+	svc := NewOrderService(mockRepo, cfg, mockPub, mockElastic, mockProductSvc, mockUserSvc)
 	result, err := svc.CreateOrder(ctx, orderReq)
 	assert.NoError(t, err)
 	assert.Equal(t, createdID, result)
@@ -307,8 +319,11 @@ func TestOrderService_UpdateStatus_Success(t *testing.T) {
 		},
 	}
 	mockPub := &mockOrderPublisher{publishUpdateStatusFn: func(queuename string, orderID int64, status string) error { return nil }}
+	mockUserSvc := &mockUserService{getByIDFn: func(_ context.Context, _ int64) (*userEntity.UserEntity, error) {
+		return &userEntity.UserEntity{ID: 10, Name: "User"}, nil
+	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, mockPub, nil, nil, nil)
+	svc := NewOrderService(mockRepo, cfg, mockPub, nil, nil, mockUserSvc)
 	err := svc.UpdateStatus(ctx, orderReq)
 	assert.NoError(t, err)
 }
@@ -317,8 +332,9 @@ func TestOrderService_DeleteByID_Success(t *testing.T) {
 	ctx := context.Background()
 	mockRepo := &mockOrderRepo{deleteOrderFn: func(_ context.Context, _ int64) error { return nil }}
 	mockElastic := &mockElasticRepo{}
+	mockPub := &mockOrderPublisher{publishDeleteOrderFromQueueFn: func(orderID int64) error { return nil }}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, nil, mockElastic, nil, nil)
+	svc := NewOrderService(mockRepo, cfg, mockPub, mockElastic, nil, nil)
 	err := svc.DeleteByID(ctx, 10)
 	assert.NoError(t, err)
 }
@@ -333,8 +349,11 @@ func TestOrderService_GetOrderByOrderCode_Success(t *testing.T) {
 	mockUserSvc := &mockUserService{getByIDFn: func(_ context.Context, _ int64) (*userEntity.UserEntity, error) {
 		return user, nil
 	}}
+	mockProductSvc := &mockProductService{getByIDFn: func(_ context.Context, _ int64) (*productEntity.ProductEntity, error) {
+		return &productEntity.ProductEntity{ID: 1, Name: "Product"}, nil
+	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, nil, nil, nil, mockUserSvc)
+	svc := NewOrderService(mockRepo, cfg, nil, nil, mockProductSvc, mockUserSvc)
 	result, err := svc.GetOrderByOrderCode(ctx, "ORD-001")
 	assert.NoError(t, err)
 	assert.Equal(t, "Jane Doe", result.BuyerName)
@@ -346,7 +365,10 @@ func TestOrderService_GetAll_ErrorPropagation(t *testing.T) {
 		return nil, 0, 0, errors.New("db error")
 	}}
 	cfg := &config.Config{}
-	svc := NewOrderService(mockRepo, cfg, nil, nil, nil, nil)
+	mockElastic := &mockElasticRepo{searchOrderElasticFn: func(_ context.Context, _ entity.QueryStringEntity) ([]entity.OrderEntity, int64, int64, error) {
+		return nil, 0, 0, errors.New("elastic not available")
+	}}
+	svc := NewOrderService(mockRepo, cfg, nil, mockElastic, nil, nil)
 	_, _, _, err := svc.GetAll(ctx, entity.QueryStringEntity{})
 	assert.Error(t, err)
 	assert.Equal(t, "db error", err.Error())
