@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 	"tofash/internal/modules/product/config"
+	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/handlers/response"
-	"tofash/internal/modules/product/internal/core/domain/entity"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"

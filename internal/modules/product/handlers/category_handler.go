@@ -4,10 +4,10 @@ import (
 	"net/http"
 	adapter "tofash/internal/modules/product"
 	"tofash/internal/modules/product/config"
+	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/handlers/request"
 	"tofash/internal/modules/product/handlers/response"
-	"tofash/internal/modules/product/internal/core/domain/entity"
-	"tofash/internal/modules/product/internal/core/service"
+	"tofash/internal/modules/product/service"
 	"tofash/internal/modules/product/utils/conv"
 
 	"github.com/labstack/echo/v4"

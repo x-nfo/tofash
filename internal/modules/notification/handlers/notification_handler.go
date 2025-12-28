@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"notification-service/config"
 	"notification-service/internal/adapter"
-	"notification-service/internal/adapter/handlers/response"
 	"notification-service/internal/core/domain/entity"
-	"notification-service/internal/core/service"
 	"notification-service/utils/conv"
+	"tofash/internal/modules/notification/config"
+	"tofash/internal/modules/notification/handlers/response"
+	"tofash/internal/modules/notification/service"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"tofash/internal/modules/order/config"
-	"tofash/internal/modules/order/internal/core/domain/entity"
+	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/utils"
 
 	"github.com/labstack/gommon/log"

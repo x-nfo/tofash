@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math"
 	"time"
-	"tofash/internal/modules/order/internal/core/domain/entity"
+	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"

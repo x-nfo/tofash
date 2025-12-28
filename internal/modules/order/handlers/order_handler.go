@@ -5,10 +5,10 @@ import (
 	"net/http"
 	adapter "tofash/internal/modules/order"
 	"tofash/internal/modules/order/config"
+	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/handlers/request"
 	"tofash/internal/modules/order/handlers/response"
-	"tofash/internal/modules/order/internal/core/domain/entity"
-	"tofash/internal/modules/order/internal/core/service"
+	"tofash/internal/modules/order/service"
 	"tofash/internal/modules/order/utils/conv"
 
 	"github.com/labstack/echo/v4"
@@ -63,19 +63,13 @@ func (o *orderHandler) GetOrderByOrderCode(c echo.Context) error {
 		respOrder = response.OrderAdminDetail{}
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] GetOrderByOrderCode: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
-
 	orderCode := c.Param("orderCode")
 	if orderCode == "" {
 		log.Errorf("[OrderHandler-2] GetOrderByOrderCode: %s", "orderCode not found")
 		return c.JSON(http.StatusNotFound, response.ResponseError("orderCode not found"))
 	}
 
-	order, err := o.orderService.GetOrderByOrderCode(ctx, orderCode, user)
+	order, err := o.orderService.GetOrderByOrderCode(ctx, orderCode)
 	if err != nil {
 		log.Errorf("[OrderHandler-3] GetOrderByOrderCode: %v", err)
 		if err.Error() == "404" {
@@ -117,12 +111,6 @@ func (o *orderHandler) DeleteByID(c echo.Context) error {
 		ctx = c.Request().Context()
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] DeleteByID: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
-
 	idParams := c.Param("orderID")
 	if idParams == "" {
 		log.Errorf("[OrderHandler-2] DeleteByID: %s", "orderID not found")
@@ -153,12 +141,6 @@ func (o *orderHandler) GetDetailCustomer(c echo.Context) error {
 		respOrder = response.OrderAdminDetail{}
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] GetDetailCustomer: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
-
 	orderIDStr := c.Param("orderID")
 	if orderIDStr == "" {
 		log.Errorf("[OrderHandler-2] GetDetailCustomer: %s", "orderID not found")
@@ -171,7 +153,7 @@ func (o *orderHandler) GetDetailCustomer(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ResponseError(err.Error()))
 	}
 
-	order, err := o.orderService.GetDetailCustomer(ctx, orderID, user)
+	order, err := o.orderService.GetDetailCustomer(ctx, orderID)
 	if err != nil {
 		log.Errorf("[OrderHandler-4] GetDetailCustomer: %v", err)
 		if err.Error() == "404" {
@@ -260,7 +242,7 @@ func (o *orderHandler) GetAllCustomer(c echo.Context) error {
 		BuyerID: userID,
 	}
 
-	results, totalData, totalPage, err := o.orderService.GetAllCustomer(ctx, reqEntity, user)
+	results, totalData, totalPage, err := o.orderService.GetAllCustomer(ctx, reqEntity)
 	if err != nil {
 		log.Errorf("[OrderHandler-3] GetAllCustomer: %v", err)
 		if err.Error() == "404" {
@@ -294,12 +276,6 @@ func (o *orderHandler) UpdateStatus(c echo.Context) error {
 		req = request.OrderUpdateStatusRequest{}
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] UpdateStatus: %s", "data token not found")
-		return c.JSON(http.StatusUnauthorized, response.ResponseError("data token not found"))
-	}
-
 	if err := c.Bind(&req); err != nil {
 		log.Errorf("[OrderHandler-2] UpdateStatus: %v", err)
 		return c.JSON(http.StatusBadRequest, response.ResponseError(err.Error()))
@@ -328,7 +304,7 @@ func (o *orderHandler) UpdateStatus(c echo.Context) error {
 		ID:      orderID,
 	}
 
-	err = o.orderService.UpdateStatus(ctx, reqEntity, user)
+	err = o.orderService.UpdateStatus(ctx, reqEntity)
 	if err != nil {
 		log.Errorf("[OrderHandler-6] UpdateStatus: %v", err)
 		if err.Error() == "404" {
@@ -350,12 +326,6 @@ func (o *orderHandler) CreateOrder(c echo.Context) error {
 		ctx = c.Request().Context()
 		req = request.CreateOrderRequest{}
 	)
-
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] CreateOrder: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
 
 	if err := c.Bind(&req); err != nil {
 		log.Errorf("[OrderHandler-2] CreateOrder: %v", err)
@@ -386,7 +356,7 @@ func (o *orderHandler) CreateOrder(c echo.Context) error {
 
 	reqEntity.OrderItems = orderDetails
 
-	orderID, err := o.orderService.CreateOrder(ctx, reqEntity, user)
+	orderID, err := o.orderService.CreateOrder(ctx, reqEntity)
 	if err != nil {
 		log.Errorf("[OrderHandler-4] CreateOrder: %v", err)
 		return c.JSON(http.StatusInternalServerError, response.ResponseError(err.Error()))
@@ -404,12 +374,6 @@ func (o *orderHandler) GetByIDAdmin(c echo.Context) error {
 		respOrder = response.OrderAdminDetail{}
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] GetByIDAdmin: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
-
 	orderIDStr := c.Param("orderID")
 	if orderIDStr == "" {
 		log.Errorf("[OrderHandler-2] GetByIDAdmin: %s", "orderID not found")
@@ -422,7 +386,7 @@ func (o *orderHandler) GetByIDAdmin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ResponseError(err.Error()))
 	}
 
-	order, err := o.orderService.GetByID(ctx, orderID, user)
+	order, err := o.orderService.GetByID(ctx, orderID)
 	if err != nil {
 		log.Errorf("[OrderHandler-4] GetByIDAdmin: %v", err)
 		if err.Error() == "404" {
@@ -465,12 +429,6 @@ func (o *orderHandler) GetAllAdmin(c echo.Context) error {
 		respOrders = []response.OrderAdminList{}
 	)
 
-	user := c.Get("user").(string)
-	if user == "" {
-		log.Errorf("[OrderHandler-1] GetAllAdmin: %s", "data token not found")
-		return c.JSON(http.StatusNotFound, response.ResponseError("data token not found"))
-	}
-
 	search := c.QueryParam("search")
 	var page int64 = 1
 	if pageStr := c.QueryParam("page"); pageStr != "" {
@@ -500,7 +458,7 @@ func (o *orderHandler) GetAllAdmin(c echo.Context) error {
 		Limit:  perPage,
 	}
 
-	results, totalData, totalPage, err := o.orderService.GetAll(ctx, reqEntity, user)
+	results, totalData, totalPage, err := o.orderService.GetAll(ctx, reqEntity)
 	if err != nil {
 		log.Errorf("[OrderHandler-1] GetAllAdmin: %v", err)
 		if err.Error() == "404" {

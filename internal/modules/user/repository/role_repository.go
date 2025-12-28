@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"tofash/internal/modules/user/internal/core/domain/entity"
+	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"

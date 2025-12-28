@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"tofash/internal/modules/user/internal/core/domain/entity"
+	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/repository"
 )
 

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"notification-service/internal/core/domain/entity"
-	"notification-service/internal/core/domain/model"
 	"time"
+	"tofash/internal/modules/notification/entity"
+	"tofash/internal/modules/notification/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

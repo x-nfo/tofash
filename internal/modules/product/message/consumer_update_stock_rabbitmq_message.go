@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 	"tofash/internal/modules/product/config"
-	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"

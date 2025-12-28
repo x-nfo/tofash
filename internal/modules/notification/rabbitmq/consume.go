@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"notification-service/config"
 	"notification-service/internal/adapter/message"
-	"notification-service/internal/adapter/repository"
-	"notification-service/internal/core/domain/entity"
-	"notification-service/internal/core/service"
+	"tofash/internal/modules/notification/entity"
+	"tofash/internal/modules/notification/repository"
+	"tofash/internal/modules/notification/service"
 
 	"github.com/labstack/gommon/log"
 )

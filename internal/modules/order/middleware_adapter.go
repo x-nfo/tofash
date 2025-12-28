@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"tofash/internal/modules/order/config"
+	"tofash/internal/modules/order/entity"
 	"tofash/internal/modules/order/handlers/response"
-	"tofash/internal/modules/order/internal/core/domain/entity"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"

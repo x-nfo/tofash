@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"math"
-	"payment-service/internal/core/domain/entity"
-	"payment-service/internal/core/domain/model"
+	"tofash/internal/modules/payment/entity"
+	"tofash/internal/modules/payment/internal/core/domain/model"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"

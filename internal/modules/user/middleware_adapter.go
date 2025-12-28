@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 	"tofash/internal/modules/user/config"
+	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/handler/response"
-	"tofash/internal/modules/user/internal/core/domain/entity"
-	"tofash/internal/modules/user/internal/core/service"
+	"tofash/internal/modules/user/service"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"

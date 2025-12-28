@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/entity"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/gommon/log"

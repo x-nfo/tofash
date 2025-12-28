@@ -8,7 +8,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
-	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/internal/core/domain/model"
 
 	"github.com/elastic/go-elasticsearch/v7"

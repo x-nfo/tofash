@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	"tofash/internal/modules/product/internal/core/domain/entity"
+	"tofash/internal/modules/product/entity"
 	"tofash/internal/modules/product/repository"
 	"tofash/internal/modules/product/utils/conv"
 

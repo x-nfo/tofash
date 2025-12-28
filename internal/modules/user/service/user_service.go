@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 	"tofash/internal/modules/user/config"
-	"tofash/internal/modules/user/internal/core/domain/entity"
+	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/message"
 	"tofash/internal/modules/user/repository"
 	"tofash/internal/modules/user/utils"
