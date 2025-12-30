@@ -181,6 +181,8 @@ func (ch *CartHandler) GetCart(c echo.Context) error {
 			Quantity:      item.Quantity,
 			Unit:          product.Unit,
 			Weight:        int64(product.Weight),
+			Size:          item.Size,
+			Color:         item.Color,
 		})
 	}
 

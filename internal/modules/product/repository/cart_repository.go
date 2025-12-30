@@ -23,11 +23,23 @@ type CartRedisRepository struct {
 
 // RemoveAllCart implements CartRedisRepositoryInterface.
 func (c *CartRedisRepository) RemoveAllCart(ctx context.Context, userID int64) error {
+	// DIAGNOSTIC LOG: Check if Redis client is nil
+	if c.Client == nil {
+		log.Errorf("[CartRedisRepository-DIAG] RemoveAllCart: Redis client is nil - Redis server is not running or not connected")
+		return fmt.Errorf("redis client is not initialized - Redis server may not be running")
+	}
+
 	return c.Client.Del(ctx, fmt.Sprintf("cart:cart:%d", userID)).Err()
 }
 
 // AddToCart implements CartRedisRepositoryInterface.
 func (c *CartRedisRepository) AddToCart(ctx context.Context, userID string, items []entity.CartItem) error {
+	// DIAGNOSTIC LOG: Check if Redis client is nil
+	if c.Client == nil {
+		log.Errorf("[CartRedisRepository-DIAG] AddToCart: Redis client is nil - Redis server is not running or not connected")
+		return fmt.Errorf("redis client is not initialized - Redis server may not be running")
+	}
+
 	data, err := json.Marshal(items)
 	if err != nil {
 		log.Errorf("[CartRedisRepository-1] AddToCart: %v", err)
@@ -38,6 +50,12 @@ func (c *CartRedisRepository) AddToCart(ctx context.Context, userID string, item
 
 // GetCart implements CartRedisRepositoryInterface.
 func (c *CartRedisRepository) GetCart(ctx context.Context, userID string) ([]entity.CartItem, error) {
+	// DIAGNOSTIC LOG: Check if Redis client is nil
+	if c.Client == nil {
+		log.Errorf("[CartRedisRepository-DIAG] GetCart: Redis client is nil - Redis server is not running or not connected")
+		return nil, fmt.Errorf("redis client is not initialized - Redis server may not be running")
+	}
+
 	val, err := c.Client.Get(ctx, fmt.Sprintf("cart:%s", userID)).Result()
 	if err == redis.Nil {
 		log.Infof("[CartRedisRepository-1] GetCart: Cart not found")
@@ -58,6 +76,12 @@ func (c *CartRedisRepository) GetCart(ctx context.Context, userID string) ([]ent
 
 // RemoveFromCart implements CartRedisRepositoryInterface.
 func (c *CartRedisRepository) RemoveFromCart(ctx context.Context, userID int64, productID int64) error {
+	// DIAGNOSTIC LOG: Check if Redis client is nil
+	if c.Client == nil {
+		log.Errorf("[CartRedisRepository-DIAG] RemoveFromCart: Redis client is nil - Redis server is not running or not connected")
+		return fmt.Errorf("redis client is not initialized - Redis server may not be running")
+	}
+
 	cart, err := c.GetCart(ctx, fmt.Sprintf("cart:%d", userID))
 	if err != nil {
 		log.Errorf("[CartRedisRepository-1] RemoveFromCart: %v", err)

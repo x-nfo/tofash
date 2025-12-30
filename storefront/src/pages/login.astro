@@ -131,55 +131,70 @@ let success = "";
 </BaseLayout>
 
 <script>
-    // Client-side handling for success redirect and store update
-    // We intercept the form submission to capture the response more easily if we wanted AJAX,
-    // but since we used standard form post, we need a way to pass data to client.
-
-    // Better approach for SPA-feel: Use client-side fetch.
+    // Client-side login handling with smart API fetcher
     import { api } from "../lib/api";
     import { setUser } from "../lib/store";
     import type { User } from "../types/api";
 
     const form = document.getElementById("login-form") as HTMLFormElement;
-    const errorDiv = document.querySelector(".text-red-600"); // Simple selector
 
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
+
             const formData = new FormData(form);
             const email = formData.get("email") as string;
             const password = formData.get("password") as string;
 
+            // Disable submit button
+            const submitBtn = form.querySelector(
+                'button[type="submit"]',
+            ) as HTMLButtonElement;
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Signing in...";
+
             try {
+                // Use smart API fetcher (client-side mode)
                 const response = await api<User>("/login", {
                     method: "POST",
                     body: { email, password },
-                    auth: false,
+                    auth: false, // Login doesn't require auth
                 });
 
-                if (response.status && response.data) {
+                if (response.data) {
+                    // Debug: Log the response to see what we're getting
+                    console.log("Login response:", response.data);
+                    console.log("Role name:", response.data.role_name);
+                    console.log("Role:", response.data.role);
+
                     // 1. Update Nano Store
                     setUser(response.data);
 
-                    // 2. SET COOKIES (Crucial for Middleware)
+                    // 2. SET COOKIES (Crucial for Middleware and SSR)
                     // Expires in 1 day (86400 seconds)
-                    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; Secure; SameSite=Lax`;
-                    document.cookie = `user_role=${response.data.role_name || response.data.role}; path=/; max-age=86400; Secure; SameSite=Lax`;
+                    document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+                    document.cookie = `user_role=${response.data.role_name || response.data.role}; path=/; max-age=86400; SameSite=Lax`;
 
-                    // 3. Redirect
-                    // Check if there was a redirect param or default to home/admin
+                    // 3. Redirect based on role
                     const role = response.data.role_name || response.data.role;
-                    if (role === "admin") {
-                        window.location.href = "/admin/dashboard";
+
+                    // Check for admin roles (case-insensitive)
+                    if (role && role.toLowerCase().includes("admin")) {
+                        window.location.href = "/admin";
                     } else {
                         window.location.href = "/";
                     }
                 } else {
                     alert(response.message || "Login failed");
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
                 }
             } catch (err: any) {
-                console.error(err);
-                alert(err.message || "Login error");
+                console.error("Login error:", err);
+                alert(err.message || "Login error. Please try again.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
     }

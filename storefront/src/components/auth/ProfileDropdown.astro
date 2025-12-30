@@ -1,0 +1,286 @@
+---
+/**
+ * ProfileDropdown Component
+ * User profile dropdown with menu options for authenticated users
+ */
+
+interface Props {
+    user?: {
+        name?: string;
+        email?: string;
+        role_name?: string;
+    };
+}
+
+const { user } = Astro.props;
+
+// Import auth store functions
+import { logout, $userRole } from "../../stores/auth";
+import { showSuccessToast } from "../../lib/toast";
+---
+
+<div class="profile-dropdown" id="profile-dropdown">
+    <!-- Profile Button -->
+    <button
+        id="profile-btn"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-expanded="false"
+        aria-haspopup="true"
+    >
+        <!-- Avatar -->
+        <div
+            class="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium text-sm"
+        >
+            {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+        </div>
+
+        <!-- User Info (Desktop) -->
+        <div class="hidden md:block text-left">
+            <p class="text-sm font-medium text-gray-900">
+                {user?.name || "User"}
+            </p>
+            <p class="text-xs text-gray-500">
+                {user?.email || ""}
+            </p>
+        </div>
+
+        <!-- Chevron Icon -->
+        <svg
+            class="h-5 w-5 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <!-- Dropdown Menu -->
+    <div
+        id="dropdown-menu"
+        class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="profile-btn"
+    >
+        <!-- User Info Header -->
+        <div class="px-4 py-3 border-b border-gray-200">
+            <p class="text-sm font-medium text-gray-900">
+                {user?.name || "User"}
+            </p>
+            <p class="text-xs text-gray-500 truncate">
+                {user?.email || ""}
+            </p>
+            {
+                user?.role_name && (
+                    <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800">
+                        {user.role_name}
+                    </span>
+                )
+            }
+        </div>
+
+        <!-- Menu Items -->
+        <div class="py-1">
+            <a
+                href="/account"
+                class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                role="menuitem"
+            >
+                <svg
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    ></path>
+                </svg>
+                My Profile
+            </a>
+
+            <a
+                href="/account/orders"
+                class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                role="menuitem"
+            >
+                <svg
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                My Orders
+            </a>
+
+            {
+                user?.role_name?.toLowerCase().includes("admin") && (
+                    <a
+                        href="/admin"
+                        class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        role="menuitem"
+                    >
+                        <svg
+                            class="h-5 w-5 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                            />
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                        </svg>
+                        Admin Dashboard
+                    </a>
+                )
+            }
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-200"></div>
+
+        <!-- Logout -->
+        <div class="py-1">
+            <button
+                id="logout-btn"
+                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                role="menuitem"
+            >
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    ></path>
+                </svg>
+                Sign Out
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { logout, $userRole } from "../../stores/auth";
+    import { showSuccessToast } from "../../lib/toast";
+
+    const profileBtn = document.getElementById(
+        "profile-btn",
+    ) as HTMLButtonElement;
+    const dropdownMenu = document.getElementById(
+        "dropdown-menu",
+    ) as HTMLDivElement;
+    const logoutBtn = document.getElementById(
+        "logout-btn",
+    ) as HTMLButtonElement;
+
+    // Toggle dropdown
+    profileBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isExpanded = profileBtn.getAttribute("aria-expanded") === "true";
+
+        if (isExpanded) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+        if (
+            !profileBtn?.contains(e.target as Node) &&
+            !dropdownMenu?.contains(e.target as Node)
+        ) {
+            closeDropdown();
+        }
+    });
+
+    // Close dropdown on escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeDropdown();
+        }
+    });
+
+    function openDropdown() {
+        if (profileBtn && dropdownMenu) {
+            profileBtn.setAttribute("aria-expanded", "true");
+            dropdownMenu.classList.remove("hidden");
+        }
+    }
+
+    function closeDropdown() {
+        if (profileBtn && dropdownMenu) {
+            profileBtn.setAttribute("aria-expanded", "false");
+            dropdownMenu.classList.add("hidden");
+        }
+    }
+
+    // Handle logout
+    logoutBtn?.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        closeDropdown();
+
+        try {
+            logout();
+            showSuccessToast("Logged out successfully");
+
+            setTimeout(() => {
+                window.location.href = "/auth/signin";
+            }, 500);
+        } catch (error: any) {
+            console.error("Logout error:", error);
+        }
+    });
+</script>
+
+<style>
+    .profile-dropdown {
+        position: relative;
+    }
+
+    #dropdown-menu {
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

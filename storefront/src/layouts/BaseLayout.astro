@@ -30,4 +30,44 @@ const { title } = Astro.props;
 		</main>
 		<Footer />
 	</body>
+	<script>
+		import { api } from "../lib/api";
+		import { setUser } from "../lib/store";
+		import type { User } from "../types/api";
+
+		// Session Hydration Logic
+		async function hydrateSession() {
+			// Check if we have an access_token cookie
+			const hasToken = document.cookie
+				.split(";")
+				.some((item) => item.trim().startsWith("access_token="));
+
+			if (hasToken) {
+				try {
+					console.log("Hydrating session...");
+					const response = await api<any>("/profile");
+					if (response.data) {
+						// ProfileResponse structure is slightly different from User interface
+						// We map it here
+						const user: User = {
+							user_id: response.data.id,
+							email: response.data.email,
+							name: response.data.name,
+							role_name: response.data.role, // ProfileResponse uses 'role' json tag for RoleName
+							role: response.data.role,
+							access_token: "", // Token is in cookie, optional here
+						};
+						setUser(user);
+						console.log("Session hydrated:", user.name);
+					}
+				} catch (error) {
+					console.error("Failed to hydrate session:", error);
+					// If token invalid, maybe clear cookie?
+				}
+			}
+		}
+
+		// Run immediately
+		hydrateSession();
+	</script>
 </html>

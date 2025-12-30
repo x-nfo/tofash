@@ -8,6 +8,7 @@ import (
 	userHandler "tofash/internal/modules/user/handler"
 	userRepo "tofash/internal/modules/user/repository"
 	userService "tofash/internal/modules/user/service"
+	userValidator "tofash/internal/modules/user/utils/validator"
 
 	// Product Module
 	productHandler "tofash/internal/modules/product/handlers"
@@ -50,7 +51,19 @@ func main() {
 	// 2. Setup Echo
 	e := echo.New()
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS()) // Enable CORS for frontend communication
+
+	// Configure CORS with proper settings for credentials
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:4321", "http://localhost:3000"},
+		AllowMethods:     []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.PATCH},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: true, // Important: allows cookies to be sent
+		ExposeHeaders:    []string{echo.HeaderContentLength},
+		MaxAge:           86400, // 24 hours
+	}))
+
+	// Register Custom Validator
+	e.Validator = userValidator.NewValidator()
 
 	// 3. Setup Dependencies
 
@@ -75,12 +88,18 @@ func main() {
 	// Middleware
 	authMiddleware := mid.NewAuthMiddleware(cfg, jwtSvc)
 
-	// Redis
+	// Redis - REQUIRED for cart functionality
 	redisClient := cfg.NewRedisClient()
+	if redisClient == nil {
+		log.Fatal("[MAIN] Redis connection failed. Redis is REQUIRED for cart functionality. Please ensure Redis is running on localhost:6379")
+	}
+	log.Println("[MAIN] Redis connected successfully - using Redis cart repository")
 
 	// 5. WIRING: Product Module
 	productRepository := productRepo.NewProductRepository(db)
 	categoryRepository := productRepo.NewCategoryRepository(db)
+
+	// Use Redis cart repository (Redis is now required)
 	cartRepository := productRepo.NewCartRedisRepository(redisClient)
 	// productPublisher := productMessage.NewPublishRabbitMQ(cfg) // Removed RabbitMQ
 
@@ -153,6 +172,7 @@ func main() {
 	// User
 	auth.POST("/roles", roleH.Create)
 	auth.GET("/verify-account", userH.VerifyAccount)
+	auth.GET("/profile", userH.GetProfileUser)
 
 	// Cart
 	auth.POST("/carts", cartH.AddToCart)

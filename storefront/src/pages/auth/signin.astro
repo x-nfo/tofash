@@ -1,0 +1,38 @@
+---
+/**
+ * Sign In Page
+ * User authentication page with login form
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LoginForm from "../../components/auth/LoginForm.astro";
+
+// Get redirect path from URL query params
+const url = new URL(Astro.request.url);
+const redirectPath = url.searchParams.get("redirect") || "/";
+---
+
+<BaseLayout title="Sign In - Tofash">
+    <div
+        class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50"
+    >
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-gray-900">Welcome Back</h1>
+                <p class="mt-2 text-sm text-gray-600">
+                    Sign in to your account to continue
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <LoginForm redirectPath={redirectPath} />
+            </div>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    /* Custom styles for signin page */
+</style>

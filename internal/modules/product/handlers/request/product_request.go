@@ -11,9 +11,9 @@ type ProductRequest struct {
 }
 
 type ProductDetailRequest struct {
-	Stock        int    `json:"stock" validate:"required,number"`
+	Stock        int    `json:"stock" validate:"required"`
 	ProductImage string `json:"product_image" validate:"required,url"`
-	Weight       int    `json:"weight" validate:"required,number"`
-	SalePrice    int64  `json:"sale_price" validate:"required,number"`
-	RegulerPrice int64  `json:"reguler_price" validate:"required,number"`
+	Weight       int    `json:"weight" validate:"required"`
+	SalePrice    int64  `json:"sale_price" validate:"required"`
+	RegulerPrice int64  `json:"reguler_price" validate:"required"`
 }

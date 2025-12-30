@@ -9,7 +9,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // 2. PROTECT ADMIN ROUTES
     // If user tries to access /admin* without being an 'admin', redirect to login
     if (path.startsWith("/admin")) {
-        if (!token || role !== "admin") {
+        if (!token || !role?.toLowerCase().includes("admin")) {
             return context.redirect("/login");
         }
     }

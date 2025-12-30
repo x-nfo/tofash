@@ -7,7 +7,6 @@ import (
 	"tofash/internal/config"
 	"tofash/internal/modules/user/entity"
 	"tofash/internal/modules/user/service"
-	"tofash/internal/stubs"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -44,13 +43,23 @@ func (m *AuthMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 		redisConn := m.cfg.NewRedisClient()
 
 		authHeader := c.Request().Header.Get("Authorization")
-		if authHeader == "" {
+		tokenString := ""
+
+		if authHeader != "" {
+			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+		} else {
+			// Fallback: Check Cookie
+			cookie, err := c.Cookie("access_token")
+			if err == nil {
+				tokenString = cookie.Value
+			}
+		}
+
+		if tokenString == "" {
 			log.Errorf("[Middleware] CheckToken: %s", "missing or invalid token")
 			respErr.Message = "missing or invalid token"
 			return c.JSON(http.StatusUnauthorized, respErr)
 		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		_, err := m.jwtService.ValidateToken(tokenString)
 		if err != nil {
@@ -61,22 +70,16 @@ func (m *AuthMiddleware) CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 		var getSession string
 		if redisConn == nil {
-			// STUB Logic
-			var errSes error
-			getSession, errSes = stubs.GetSession(tokenString)
-			if errSes != nil {
-				log.Errorf("[Middleware-Stub] CheckToken: %s", "session not found/expired")
-				respErr.Message = "session not found or expired"
-				return c.JSON(http.StatusUnauthorized, respErr)
-			}
-		} else {
-			var errSes error
-			getSession, errSes = redisConn.Get(c.Request().Context(), tokenString).Result()
-			if errSes != nil || len(getSession) == 0 {
-				log.Errorf("[Middleware] CheckToken: %s", "session not found/expired")
-				respErr.Message = "session not found or expired"
-				return c.JSON(http.StatusUnauthorized, respErr)
-			}
+			log.Errorf("[Middleware] CheckToken: %s", "redis connection failed")
+			respErr.Message = "redis connection failed"
+			return c.JSON(http.StatusInternalServerError, respErr)
+		}
+		var errSes error
+		getSession, errSes = redisConn.Get(c.Request().Context(), tokenString).Result()
+		if errSes != nil || len(getSession) == 0 {
+			log.Errorf("[Middleware] CheckToken: %s", "session not found/expired")
+			respErr.Message = "session not found or expired"
+			return c.JSON(http.StatusUnauthorized, respErr)
 		}
 		jwtUserData := entity.JwtUserData{}
 		err = json.Unmarshal([]byte(getSession), &jwtUserData)

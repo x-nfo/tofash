@@ -9,4 +9,6 @@ type CartResponse struct {
 	Quantity      int64  `json:"quantity"`
 	Unit          string `json:"unit"`
 	Weight        int64  `json:"weight"`
+	Size          string `json:"size"`
+	Color         string `json:"color"`
 }

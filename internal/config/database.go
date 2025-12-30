@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	logPkg "log"
+	"os"
+	"time"
 
 	orderModel "tofash/internal/modules/order/model"
 	productSeeds "tofash/internal/modules/product/database/seeds"
@@ -13,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // Legacy Wrapper for backward compatibility
@@ -58,7 +62,21 @@ func InitDatabase(cfg *Config) *gorm.DB {
 		cfg.Psql.Port,
 		cfg.Psql.DBName)
 
-	db, err := gorm.Open(postgres.Open(dbConnString), &gorm.Config{})
+	// Configure GORM with custom logger to reduce SLOW SQL warnings
+	// Set slow threshold to 1 second (1000ms) since queries are now optimized with indexes
+	newLogger := logger.New(
+		logPkg.New(os.Stdout, "\r\n", logPkg.LstdFlags), // Use standard log package
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold: 1 second
+			LogLevel:                  logger.Warn, // Log level: only warnings and errors
+			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,       // Disable color in logs
+		},
+	)
+
+	db, err := gorm.Open(postgres.Open(dbConnString), &gorm.Config{
+		Logger: newLogger,
+	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("[InitDatabase] Failed to connect to database " + cfg.Psql.Host)
 		return nil

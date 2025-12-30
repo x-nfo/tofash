@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get JWT Token - Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+
+        .result.success {
+            background-color: #f0fff0;
+            border-color: #4CAF50;
+        }
+
+        .result.error {
+            background-color: #fff0f0;
+            border-color: #f44336;
+        }
+
+        .token-display {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .copy-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            width: auto;
+        }
+
+        .copy-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔑 Get JWT Token</h1>
+
+        <div class="info-box">
+            <strong>ℹ️ Info:</strong> Halaman ini digunakan untuk mendapatkan JWT token dengan cara login.
+            Token ini diperlukan untuk menjalankan test cart API.
+        </div>
+
+        <div class="form-group">
+            <label for="apiUrl">API URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8080/api/v1">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Enter your email" value="">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter your password" value="">
+        </div>
+
+        <button onclick="login()" id="loginBtn">Login & Get Token</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Logging in...</p>
+        </div>
+
+        <div class="result" id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function login() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            // Validate inputs
+            if (!email || !password) {
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Error:</strong>
+                    <p>Please enter both email and password.</p>
+                `;
+                return;
+            }
+
+            // Show loading
+            loginBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch(`${apiUrl}/auth/signin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                loading.style.display = 'none';
+                loginBtn.disabled = false;
+
+                if (response.ok && data.status && data.data) {
+                    const token = data.data.access_token;
+                    const userData = data.data;
+
+                    result.style.display = 'block';
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Login Successful!</strong>
+                        <p><strong>User ID:</strong> ${userData.id}</p>
+                        <p><strong>Name:</strong> ${userData.name}</p>
+                        <p><strong>Email:</strong> ${userData.email}</p>
+                        <p><strong>Role:</strong> ${userData.role}</p>
+                        <p><strong>JWT Token:</strong></p>
+                        <div class="token-display" id="tokenDisplay">${token}</div>
+                        <button class="copy-btn" onclick="copyToken()">📋 Copy Token</button>
+                    `;
+
+                    // Store token in localStorage for convenience
+                    localStorage.setItem('jwt_token', token);
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                } else {
+                    result.style.display = 'block';
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <strong>❌ Login Failed!</strong>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Message:</strong> ${data.message || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                loginBtn.disabled = false;
+
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Error:</strong>
+                    <p>${error.message}</p>
+                    <p><strong>Make sure:</strong></p>
+                    <ul>
+                        <li>Backend server is running at ${apiUrl}</li>
+                        <li>Email and password are correct</li>
+                        <li>User account exists in database</li>
+                    </ul>
+                `;
+            }
+        }
+
+        function copyToken() {
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            const token = tokenDisplay.textContent;
+
+            navigator.clipboard.writeText(token).then(() => {
+                alert('✅ Token copied to clipboard!');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = token;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ Token copied to clipboard!');
+            });
+        }
+
+        // Check if there's a stored token
+        window.onload = function () {
+            const storedToken = localStorage.getItem('jwt_token');
+            const storedUserData = localStorage.getItem('user_data');
+
+            if (storedToken && storedUserData) {
+                const userData = JSON.parse(storedUserData);
+                document.getElementById('email').value = userData.email;
+
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.className = 'result success';
+                result.innerHTML = `
+                    <strong>✅ Previously Logged In:</strong>
+                    <p><strong>User:</strong> ${userData.name}</p>
+                    <p><strong>Email:</strong> ${userData.email}</p>
+                    <p><strong>JWT Token:</strong></p>
+                    <div class="token-display" id="tokenDisplay">${storedToken}</div>
+                    <button class="copy-btn" onclick="copyToken()">📋 Copy Token</button>
+                `;
+            }
+        };
+    </script>
+</body>
+
+</html>

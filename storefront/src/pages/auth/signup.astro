@@ -1,0 +1,34 @@
+---
+/**
+ * Sign Up Page
+ * User registration page with signup form
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SignupForm from "../../components/auth/SignupForm.astro";
+---
+
+<BaseLayout title="Sign Up - Tofash">
+    <div
+        class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50"
+    >
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-gray-900">Create Account</h1>
+                <p class="mt-2 text-sm text-gray-600">
+                    Join us today and start shopping
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <SignupForm />
+            </div>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    /* Custom styles for signup page */
+</style>

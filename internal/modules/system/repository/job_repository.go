@@ -50,13 +50,15 @@ func (r *jobRepository) CreateJob(ctx context.Context, topic string, payload int
 func (r *jobRepository) FetchPendingJobs(ctx context.Context, limit int) ([]model.Job, error) {
 	var jobs []model.Job
 
-	// Postgres FOR UPDATE SKIP LOCKED ensures concurrency safety
+	// Use raw SQL to ensure correct FOR UPDATE SKIP LOCKED placement
+	// This prevents duplicate processing when server restarts or multiple workers run
 	err := r.db.WithContext(ctx).
-		Clauses(gorm.Expr("FOR UPDATE SKIP LOCKED")).
-		Where("status = ?", "pending").
-		Order("created_at ASC").
-		Limit(limit).
-		Find(&jobs).Error
+		Raw(`SELECT * FROM "jobs"
+		     WHERE status = ?
+		     ORDER BY created_at ASC
+		     LIMIT ?
+		     FOR UPDATE SKIP LOCKED`, "pending", limit).
+		Scan(&jobs).Error
 
 	return jobs, err
 }

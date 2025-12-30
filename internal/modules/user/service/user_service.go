@@ -12,7 +12,6 @@ import (
 	"tofash/internal/modules/user/repository"
 	"tofash/internal/modules/user/utils"
 	"tofash/internal/modules/user/utils/conv"
-	"tofash/internal/stubs"
 
 	"github.com/google/uuid"
 	"github.com/labstack/gommon/log"
@@ -194,16 +193,14 @@ func (u *userService) VerifyToken(ctx context.Context, token string) (*entity.Us
 
 	redisConn := config.NewConfig().NewRedisClient()
 	if redisConn == nil {
-		if err := stubs.SaveSession(token, jsonData); err != nil {
-			log.Errorf("[UserService-4-Stub] VerifyToken: %v", err)
-			return nil, err
-		}
-	} else {
-		err = redisConn.Set(ctx, token, jsonData, time.Hour*23).Err()
-		if err != nil {
-			log.Errorf("[UserService-4] VerifyToken: %v", err)
-			return nil, err
-		}
+		err = errors.New("redis connection failed")
+		log.Errorf("[UserService-4] VerifyToken: %v", err)
+		return nil, err
+	}
+	err = redisConn.Set(ctx, token, jsonData, time.Hour*23).Err()
+	if err != nil {
+		log.Errorf("[UserService-4] VerifyToken: %v", err)
+		return nil, err
 	}
 
 	user.Token = accessToken
@@ -311,17 +308,14 @@ func (u *userService) SignIn(ctx context.Context, req entity.UserEntity) (*entit
 
 	redisConn := config.NewConfig().NewRedisClient()
 	if redisConn == nil {
-		// Fallback to stub if Redis is not available
-		if err := stubs.SaveSession(token, jsonData); err != nil {
-			log.Errorf("[UserService-4-Stub] SignIn: %v", err)
-			return nil, "", err
-		}
-	} else {
-		err = redisConn.Set(ctx, token, jsonData, time.Hour*23).Err()
-		if err != nil {
-			log.Errorf("[UserService-4] SignIn: %v", err)
-			return nil, "", err
-		}
+		err = errors.New("redis connection failed")
+		log.Errorf("[UserService-4] SignIn: %v", err)
+		return nil, "", err
+	}
+	err = redisConn.Set(ctx, token, jsonData, time.Hour*23).Err()
+	if err != nil {
+		log.Errorf("[UserService-4] SignIn: %v", err)
+		return nil, "", err
 	}
 
 	return user, token, nil

@@ -40,4 +40,12 @@ export interface ApiResponse<T> {
     data: T;
     message: string;
     status: boolean;
+    pagination?: Pagination;
+}
+
+export interface Pagination {
+    page: number;
+    total_count: number;
+    per_page: number;
+    total_pages: number;
 }

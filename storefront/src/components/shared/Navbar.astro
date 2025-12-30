@@ -1,5 +1,15 @@
 ---
+/**
+ * Navbar Component
+ * Main navigation bar with auth state integration
+ */
 
+import { $isAuthenticated, $authUser } from "../../stores/auth";
+import ProfileDropdown from "../auth/ProfileDropdown.astro";
+
+// Get initial auth state
+const isAuthenticated = $isAuthenticated.get();
+const user = $authUser.get();
 ---
 
 <nav
@@ -16,7 +26,7 @@
                 >
             </div>
 
-            <!-- Menus -->
+            <!-- Menu -->
             <div class="hidden sm:flex space-x-8">
                 <a
                     href="/"
@@ -37,6 +47,7 @@
 
             <!-- Actions -->
             <div class="flex items-center space-x-4">
+                <!-- Cart -->
                 <a
                     href="/cart"
                     class="relative p-2 text-gray-400 hover:text-gray-500 transition-colors"
@@ -56,7 +67,7 @@
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                         ></path>
                     </svg>
-                    <!-- Badge would go here -->
+                    <!-- Cart Badge -->
                     <span
                         id="cart-badge"
                         class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full hidden"
@@ -65,72 +76,92 @@
                     </span>
                 </a>
 
-                <script>
-                    import { $cart } from "../../lib/store";
-
-                    const badge = document.getElementById("cart-badge");
-
-                    $cart.subscribe((cart) => {
-                        const count = cart.reduce(
-                            (acc, item) => acc + item.quantity,
-                            0,
-                        );
-                        if (badge) {
-                            badge.innerText = count.toString();
-                            if (count > 0) {
-                                badge.classList.remove("hidden");
-                            } else {
-                                badge.classList.add("hidden");
-                            }
-                        }
-                    });
-                </script>
-            </div>
-            <div id="auth-buttons" class="ml-4">
-                <a
-                    href="/login"
-                    class="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+                <!-- Auth Buttons (Unauthenticated) -->
+                <div
+                    id="auth-buttons-unauthenticated"
+                    class="flex items-center space-x-2"
                 >
-                    Sign In
-                </a>
+                    <a
+                        href="/auth/signin"
+                        class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
+                        Sign In
+                    </a>
+                    <a
+                        href="/auth/signup"
+                        class="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+                    >
+                        Sign Up
+                    </a>
+                </div>
+
+                <!-- Profile Dropdown (Authenticated) -->
+                <div id="auth-authenticated" class="hidden">
+                    <ProfileDropdown
+                        user={user
+                            ? {
+                                  name: user.name,
+                                  email: user.email,
+                                  role_name: user.role_name || user.role,
+                              }
+                            : undefined}
+                    />
+                </div>
             </div>
-
-            <script>
-                import { $user, setUser } from "../../lib/store";
-
-                const authContainer = document.getElementById("auth-buttons");
-
-                $user.subscribe((user) => {
-                    if (authContainer) {
-                        if (user) {
-                            authContainer.innerHTML = `
-                                <div class="flex items-center space-x-4">
-                                    <span class="text-sm text-gray-700 font-medium">Hi, ${user.name.split(" ")[0]}</span>
-                                    <button id="logout-btn" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors border border-gray-200">
-                                        Logout
-                                    </button>
-                                </div>
-                            `;
-
-                            // Re-attach listener since innerHTML wiped it
-                            setTimeout(() => {
-                                document
-                                    .getElementById("logout-btn")
-                                    ?.addEventListener("click", () => {
-                                        setUser(null);
-                                        window.location.href = "/";
-                                    });
-                            }, 0);
-                        } else {
-                            authContainer.innerHTML = `
-                                <a href="/login" class="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
-                                    Sign In
-                                </a>
-                            `;
-                        }
-                    }
-                });
-            </script>
         </div>
     </div>
 </nav>
+
+<script>
+    import { $isAuthenticated, $authUser } from "../../stores/auth";
+    import { $cart as cartStore } from "../../stores/cart";
+
+    const authUnauthenticated = document.getElementById(
+        "auth-buttons-unauthenticated",
+    );
+    const authAuthenticated = document.getElementById("auth-authenticated");
+    const cartBadge = document.getElementById("cart-badge");
+    const profileDropdown = document.getElementById("profile-dropdown");
+
+    // Update auth state based on store
+    function updateAuthState() {
+        const isAuthenticated = $isAuthenticated.get();
+        const user = $authUser.get();
+
+        if (isAuthenticated && user) {
+            authUnauthenticated?.classList.add("hidden");
+            authAuthenticated?.classList.remove("hidden");
+
+            // Update profile dropdown user info
+            if (profileDropdown) {
+                const avatar = profileDropdown.querySelector(".bg-indigo-600");
+                if (avatar && user.name) {
+                    avatar.textContent = user.name.charAt(0).toUpperCase();
+                }
+            }
+        } else {
+            authUnauthenticated?.classList.remove("hidden");
+            authAuthenticated?.classList.add("hidden");
+        }
+    }
+
+    // Initial update
+    updateAuthState();
+
+    // Subscribe to auth state changes
+    $isAuthenticated.subscribe(updateAuthState);
+    $authUser.subscribe(updateAuthState);
+
+    // Update cart badge
+    cartStore.subscribe((cart) => {
+        const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+        if (cartBadge) {
+            cartBadge.innerText = count.toString();
+            if (count > 0) {
+                cartBadge.classList.remove("hidden");
+            } else {
+                cartBadge.classList.add("hidden");
+            }
+        }
+    });
+</script>

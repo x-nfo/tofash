@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Add to Cart Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 20px;
+        }
+        .test-case {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-case.passed {
+            border-left: 4px solid #4CAF50;
+            background-color: #f0fff0;
+        }
+        .test-case.failed {
+            border-left: 4px solid #f44336;
+            background-color: #fff0f0;
+        }
+        .test-case.pending {
+            border-left: 4px solid #ff9800;
+            background-color: #fff8e1;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .info {
+            color: #2196F3;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .config-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .summary {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .summary h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Add to Cart - Backend Connection</h1>
+        
+        <div class="config-section">
+            <h2>⚙️ Configuration</h2>
+            <label for="apiUrl">API URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8080/api/v1" style="width: 300px;">
+            <br>
+            <label for="accessToken">Access Token (JWT):</label>
+            <input type="text" id="accessToken" placeholder="Paste your JWT token here" style="width: 400px;">
+            <br>
+            <label for="productId">Product ID:</label>
+            <input type="number" id="productId" value="1">
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" value="1">
+            <label for="size">Size:</label>
+            <input type="text" id="size" value="M">
+            <label for="color">Color:</label>
+            <input type="text" id="color" value="Red">
+        </div>
+
+        <h2>🚀 Run Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+
+        <div id="testResults"></div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h3>📊 Test Summary</h3>
+            <p>Total Tests: <span id="totalTests">0</span></p>
+            <p>Passed: <span id="passedTests" class="success">0</span></p>
+            <p>Failed: <span id="failedTests" class="error">0</span></p>
+            <p>Success Rate: <span id="successRate">0%</span></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = document.getElementById('apiUrl').value;
+        
+        async function makeRequest(method, endpoint, data = null) {
+            const token = document.getElementById('accessToken').value;
+            const url = `${API_BASE_URL}${endpoint}`;
+            
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            };
+
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const responseData = await response.json();
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: responseData
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        function createTestCase(title, status, result) {
+            const testCase = document.createElement('div');
+            testCase.className = `test-case ${status}`;
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'test-title';
+            titleDiv.textContent = title;
+            testCase.appendChild(titleDiv);
+
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result';
+            resultDiv.textContent = JSON.stringify(result, null, 2);
+            testCase.appendChild(resultDiv);
+
+            return testCase;
+        }
+
+        function updateSummary(total, passed, failed) {
+            const summary = document.getElementById('summary');
+            summary.style.display = 'block';
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('successRate').textContent = total > 0 ? `${((passed / total) * 100).toFixed(2)}%` : '0%';
+        }
+
+        async function testBackendConnection() {
+            const testCase = createTestCase(
+                'Test 1: Backend Connection',
+                'pending',
+                { message: 'Testing backend connection...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const result = await makeRequest('GET', '/products?limit=1');
+            
+            testCase.className = `test-case ${result.ok ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: result.ok ? '✅ Backend is accessible' : '❌ Backend connection failed',
+                status: result.status,
+                data: result.data
+            }, null, 2);
+
+            return result.ok;
+        }
+
+        async function testAddToCart() {
+            const productId = document.getElementById('productId').value;
+            const quantity = document.getElementById('quantity').value;
+            const size = document.getElementById('size').value;
+            const color = document.getElementById('color').value;
+
+            const testCase = createTestCase(
+                'Test 2: Add to Cart',
+                'pending',
+                { message: 'Testing add to cart endpoint...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const result = await makeRequest('POST', '/carts', {
+                product_id: parseInt(productId),
+                quantity: parseInt(quantity),
+                size: size,
+                color: color,
+                sku: `SKU-${productId}-${size}-${color}`
+            });
+
+            testCase.className = `test-case ${result.ok ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: result.ok ? '✅ Successfully added to cart' : '❌ Failed to add to cart',
+                status: result.status,
+                data: result.data
+            }, null, 2);
+
+            return result.ok;
+        }
+
+        async function testGetCart() {
+            const testCase = createTestCase(
+                'Test 3: Get Cart',
+                'pending',
+                { message: 'Testing get cart endpoint...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const result = await makeRequest('GET', '/carts');
+
+            testCase.className = `test-case ${result.ok ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: result.ok ? '✅ Successfully retrieved cart' : '❌ Failed to retrieve cart',
+                status: result.status,
+                data: result.data
+            }, null, 2);
+
+            return result.ok;
+        }
+
+        async function testRemoveFromCart() {
+            const productId = document.getElementById('productId').value;
+
+            const testCase = createTestCase(
+                'Test 4: Remove from Cart',
+                'pending',
+                { message: 'Testing remove from cart endpoint...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const result = await makeRequest('DELETE', `/carts?product_id=${productId}`);
+
+            testCase.className = `test-case ${result.ok ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: result.ok ? '✅ Successfully removed from cart' : '❌ Failed to remove from cart',
+                status: result.status,
+                data: result.data
+            }, null, 2);
+
+            return result.ok;
+        }
+
+        async function testClearCart() {
+            const testCase = createTestCase(
+                'Test 5: Clear Cart',
+                'pending',
+                { message: 'Testing clear cart endpoint...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const result = await makeRequest('DELETE', '/carts/all');
+
+            testCase.className = `test-case ${result.ok ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: result.ok ? '✅ Successfully cleared cart' : '❌ Failed to clear cart',
+                status: result.status,
+                data: result.data
+            }, null, 2);
+
+            return result.ok;
+        }
+
+        async function testFullWorkflow() {
+            const productId = document.getElementById('productId').value;
+            const quantity = document.getElementById('quantity').value;
+            const size = document.getElementById('size').value;
+            const color = document.getElementById('color').value;
+
+            const testCase = createTestCase(
+                'Test 6: Full Workflow (Add -> Get -> Remove)',
+                'pending',
+                { message: 'Testing full cart workflow...' }
+            );
+            document.getElementById('testResults').appendChild(testCase);
+
+            const steps = [];
+
+            // Step 1: Add to cart
+            const addResult = await makeRequest('POST', '/carts', {
+                product_id: parseInt(productId),
+                quantity: parseInt(quantity),
+                size: size,
+                color: color,
+                sku: `SKU-${productId}-${size}-${color}`
+            });
+            steps.push({
+                step: 'Add to Cart',
+                success: addResult.ok,
+                status: addResult.status
+            });
+
+            // Step 2: Get cart
+            const getResult = await makeRequest('GET', '/carts');
+            steps.push({
+                step: 'Get Cart',
+                success: getResult.ok,
+                status: getResult.status,
+                itemCount: getResult.data?.data?.length || 0
+            });
+
+            // Step 3: Remove from cart
+            const removeResult = await makeRequest('DELETE', `/carts?product_id=${productId}`);
+            steps.push({
+                step: 'Remove from Cart',
+                success: removeResult.ok,
+                status: removeResult.status
+            });
+
+            const allPassed = steps.every(s => s.success);
+
+            testCase.className = `test-case ${allPassed ? 'passed' : 'failed'}`;
+            testCase.querySelector('.test-result').textContent = JSON.stringify({
+                message: allPassed ? '✅ Full workflow completed successfully' : '❌ Full workflow failed',
+                steps: steps
+            }, null, 2);
+
+            return allPassed;
+        }
+
+        async function runAllTests() {
+            clearResults();
+            
+            const results = [];
+            
+            results.push(await testBackendConnection());
+            results.push(await testAddToCart());
+            results.push(await testGetCart());
+            results.push(await testRemoveFromCart());
+            results.push(await testClearCart());
+            results.push(await testFullWorkflow());
+
+            const passed = results.filter(r => r).length;
+            const failed = results.length - passed;
+
+            updateSummary(results.length, passed, failed);
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

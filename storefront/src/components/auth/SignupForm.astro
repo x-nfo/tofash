@@ -1,0 +1,532 @@
+---
+/**
+ * SignupForm Component
+ * Reusable signup form component with password strength indicator and validation
+ */
+
+interface Props {
+    redirectPath?: string;
+}
+
+const { redirectPath = "/auth/signin" } = Astro.props;
+
+// Import auth store functions
+import { signup } from "../../stores/auth";
+import { showSuccessToast, showErrorToast } from "../../lib/toast";
+---
+
+<div class="signup-form" id="signup-form-container">
+    <form id="signup-form" class="space-y-5">
+        <!-- Full Name Field -->
+        <div>
+            <label
+                for="name"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Full Name
+            </label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                autocomplete="name"
+                required
+                placeholder="Enter your full name"
+                class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+            />
+        </div>
+
+        <!-- Email Field -->
+        <div>
+            <label
+                for="email"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Email Address
+            </label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                autocomplete="email"
+                required
+                placeholder="Enter your email"
+                class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+            />
+        </div>
+
+        <!-- Phone Field -->
+        <div>
+            <label
+                for="phone"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Phone Number
+            </label>
+            <input
+                type="tel"
+                id="phone"
+                name="phone"
+                autocomplete="tel"
+                required
+                placeholder="Enter your phone number"
+                class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+            />
+        </div>
+
+        <!-- Address Field -->
+        <div>
+            <label
+                for="address"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Address
+            </label>
+            <textarea
+                id="address"
+                name="address"
+                rows="3"
+                required
+                placeholder="Enter your address"
+                class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors resize-none"
+            ></textarea>
+        </div>
+
+        <!-- Password Field -->
+        <div>
+            <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Password
+            </label>
+            <div class="relative">
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    autocomplete="new-password"
+                    required
+                    placeholder="Create a password"
+                    class="appearance-none block w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                />
+                <!-- Password Toggle Button -->
+                <button
+                    type="button"
+                    id="toggle-password"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                    aria-label="Toggle password visibility"
+                >
+                    <svg
+                        id="eye-icon"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        ></path>
+                    </svg>
+                    <svg
+                        id="eye-off-icon"
+                        class="h-5 w-5 hidden"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        ></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Password Strength Indicator -->
+            <div id="password-strength" class="mt-2 hidden">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs text-gray-600">Password strength:</span
+                    >
+                    <span id="strength-text" class="text-xs font-medium"></span>
+                </div>
+                <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                        id="strength-bar"
+                        class="h-full w-0 transition-all duration-300"
+                    >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Confirmation Field -->
+        <div>
+            <label
+                for="password_confirmation"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Confirm Password
+            </label>
+            <div class="relative">
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    autocomplete="new-password"
+                    required
+                    placeholder="Confirm your password"
+                    class="appearance-none block w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                />
+                <!-- Password Toggle Button -->
+                <button
+                    type="button"
+                    id="toggle-confirm-password"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                    aria-label="Toggle password visibility"
+                >
+                    <svg
+                        id="eye-icon-confirm"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        ></path>
+                    </svg>
+                    <svg
+                        id="eye-off-icon-confirm"
+                        class="h-5 w-5 hidden"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        ></path>
+                    </svg>
+                </button>
+            </div>
+            <p id="password-match" class="mt-1 text-xs hidden"></p>
+        </div>
+
+        <!-- Terms Checkbox -->
+        <div class="flex items-start">
+            <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                class="h-4 w-4 mt-0.5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <label for="terms" class="ml-2 block text-sm text-gray-700">
+                I agree to the
+                <a href="/terms" class="text-indigo-600 hover:text-indigo-500"
+                    >Terms of Service</a
+                >
+                and
+                <a href="/privacy" class="text-indigo-600 hover:text-indigo-500"
+                    >Privacy Policy</a
+                >
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+            <button
+                type="submit"
+                id="submit-btn"
+                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+                <span id="btn-text">Sign Up</span>
+                <svg
+                    id="loading-spinner"
+                    class="animate-spin ml-2 h-5 w-5 text-white hidden"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                >
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                </svg>
+            </button>
+        </div>
+    </form>
+
+    <!-- Sign In Link -->
+    <div class="mt-6 text-center text-sm text-gray-600">
+        Already have an account?
+        <a
+            href="/auth/signin"
+            class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+        >
+            Sign in
+        </a>
+    </div>
+</div>
+
+<script>
+    import { signup } from "../../stores/auth";
+    import { showSuccessToast, showErrorToast } from "../../lib/toast";
+
+    const form = document.getElementById("signup-form") as HTMLFormElement;
+    const nameInput = document.getElementById("name") as HTMLInputElement;
+    const emailInput = document.getElementById("email") as HTMLInputElement;
+    const phoneInput = document.getElementById("phone") as HTMLInputElement;
+    const addressInput = document.getElementById(
+        "address",
+    ) as HTMLTextAreaElement;
+    const passwordInput = document.getElementById(
+        "password",
+    ) as HTMLInputElement;
+    const passwordConfirmInput = document.getElementById(
+        "password_confirmation",
+    ) as HTMLInputElement;
+    const togglePasswordBtn = document.getElementById(
+        "toggle-password",
+    ) as HTMLButtonElement;
+    const toggleConfirmPasswordBtn = document.getElementById(
+        "toggle-confirm-password",
+    ) as HTMLButtonElement;
+    const submitBtn = document.getElementById(
+        "submit-btn",
+    ) as HTMLButtonElement;
+    const btnText = document.getElementById("btn-text") as HTMLSpanElement;
+    const loadingSpinner = document.getElementById(
+        "loading-spinner",
+    ) as unknown as SVGElement;
+
+    const redirectPath = Astro.props.redirectPath || "/auth/signin";
+
+    // Password strength checker
+    function checkPasswordStrength(password: string): {
+        strength: number;
+        label: string;
+        color: string;
+    } {
+        let strength = 0;
+
+        if (password.length >= 8) strength++;
+        if (password.length >= 12) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        if (strength <= 2)
+            return { strength: 33, label: "Weak", color: "#EF4444" };
+        if (strength <= 3)
+            return { strength: 66, label: "Medium", color: "#F59E0B" };
+        return { strength: 100, label: "Strong", color: "#10B981" };
+    }
+
+    // Update password strength indicator
+    passwordInput?.addEventListener("input", () => {
+        const password = passwordInput.value;
+        const strengthContainer = document.getElementById("password-strength");
+        const strengthBar = document.getElementById("strength-bar");
+        const strengthText = document.getElementById("strength-text");
+
+        if (password.length > 0) {
+            strengthContainer?.classList.remove("hidden");
+            const result = checkPasswordStrength(password);
+
+            if (strengthBar) {
+                strengthBar.style.width = result.strength + "%";
+                strengthBar.style.backgroundColor = result.color;
+            }
+
+            if (strengthText) {
+                strengthText.textContent = result.label;
+                strengthText.style.color = result.color;
+            }
+        } else {
+            strengthContainer?.classList.add("hidden");
+        }
+    });
+
+    // Check password match
+    passwordConfirmInput?.addEventListener("input", () => {
+        const password = passwordInput?.value || "";
+        const confirmPassword = passwordConfirmInput.value;
+        const matchText = document.getElementById("password-match");
+
+        if (confirmPassword.length > 0) {
+            matchText?.classList.remove("hidden");
+            if (password === confirmPassword) {
+                matchText!.textContent = "✓ Passwords match";
+                matchText!.className = "mt-1 text-xs text-green-600";
+            } else {
+                matchText!.textContent = "✗ Passwords do not match";
+                matchText!.className = "mt-1 text-xs text-red-600";
+            }
+        } else {
+            matchText?.classList.add("hidden");
+        }
+    });
+
+    // Toggle password visibility
+    togglePasswordBtn?.addEventListener("click", () => {
+        const type = passwordInput?.type === "password" ? "text" : "password";
+        if (passwordInput) passwordInput.type = type;
+
+        const eyeIcon = document.getElementById(
+            "eye-icon",
+        ) as unknown as SVGElement;
+        const eyeOffIcon = document.getElementById(
+            "eye-off-icon",
+        ) as unknown as SVGElement;
+
+        if (type === "text") {
+            eyeIcon?.classList.add("hidden");
+            eyeOffIcon?.classList.remove("hidden");
+        } else {
+            eyeIcon?.classList.remove("hidden");
+            eyeOffIcon?.classList.add("hidden");
+        }
+    });
+
+    toggleConfirmPasswordBtn?.addEventListener("click", () => {
+        const type =
+            passwordConfirmInput?.type === "password" ? "text" : "password";
+        if (passwordConfirmInput) passwordConfirmInput.type = type;
+
+        const eyeIcon = document.getElementById(
+            "eye-icon-confirm",
+        ) as unknown as SVGElement;
+        const eyeOffIcon = document.getElementById(
+            "eye-off-icon-confirm",
+        ) as unknown as SVGElement;
+
+        if (type === "text") {
+            eyeIcon?.classList.add("hidden");
+            eyeOffIcon?.classList.remove("hidden");
+        } else {
+            eyeIcon?.classList.remove("hidden");
+            eyeOffIcon?.classList.add("hidden");
+        }
+    });
+
+    // Handle form submission
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = nameInput?.value;
+        const email = emailInput?.value;
+        const phone = phoneInput?.value;
+        const address = addressInput?.value;
+        const password = passwordInput?.value;
+        const passwordConfirmation = passwordConfirmInput?.value;
+        const terms = (document.getElementById("terms") as HTMLInputElement)
+            ?.checked;
+
+        if (
+            !name ||
+            !email ||
+            !phone ||
+            !address ||
+            !password ||
+            !passwordConfirmation
+        ) {
+            showErrorToast("Please fill in all fields");
+            return;
+        }
+
+        if (password !== passwordConfirmation) {
+            showErrorToast("Passwords do not match");
+            return;
+        }
+
+        if (!terms) {
+            showErrorToast("Please agree to the terms and conditions");
+            return;
+        }
+
+        // Show loading state
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            btnText.textContent = "Creating account...";
+            loadingSpinner?.classList.remove("hidden");
+        }
+
+        try {
+            await signup({
+                name,
+                email,
+                password,
+                password_confirmation: passwordConfirmation,
+            });
+
+            showSuccessToast(
+                "Account created successfully! Please check your email to verify your account.",
+            );
+
+            setTimeout(() => {
+                window.location.href = redirectPath;
+            }, 1500);
+        } catch (error: any) {
+            console.error("Signup error:", error);
+            showErrorToast(error.message || "Signup failed. Please try again.");
+
+            // Reset button state
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                btnText.textContent = "Sign Up";
+                loadingSpinner?.classList.add("hidden");
+            }
+        }
+    });
+</script>
+
+<style>
+    .signup-form input:focus,
+    .signup-form textarea:focus {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .signup-form button[type="submit"]:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
